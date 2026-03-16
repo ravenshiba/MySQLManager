@@ -1,0 +1,211 @@
+<Window x:Class="MySQLManager.Views.CsvImportWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:helpers="clr-namespace:MySQLManager.Helpers"
+        Title="{DynamicResource S.CSV922196}" Height="600" Width="840"
+        MinWidth="640" MinHeight="460"
+        Background="#F4F6F9"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResize">
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Resources/Styles/AppStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <helpers:BoolToVisibilityConverter        x:Key="BoolToVisibility"/>
+            <helpers:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibility"/>
+            <helpers:InverseBoolConverter             x:Key="InverseBool"/>
+            <helpers:NullToVisibilityConverter        x:Key="NullToVisibility"/>
+            <helpers:NullOrEmptyToVisibilityConverter x:Key="NullOrEmptyToVisibility"/>
+            <helpers:StringToBrushConverter           x:Key="StringToBrush"/>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>  <!-- 步驟 1：選檔 -->
+            <RowDefinition Height="Auto"/>  <!-- 步驟 2：目標 -->
+            <RowDefinition Height="Auto"/>  <!-- 欄位對映標題 -->
+            <RowDefinition Height="*"/>     <!-- 欄位對映列表 -->
+            <RowDefinition Height="Auto"/>  <!-- 預覽 -->
+            <RowDefinition Height="Auto"/>  <!-- 進度 / 按鈕 -->
+        </Grid.RowDefinitions>
+
+        <!-- ─ 步驟 1：選擇 CSV 檔 ─ -->
+        <Border Grid.Row="0" Background="#F0F2F5" Padding="12,10">
+            <StackPanel>
+                <TextBlock Text="{DynamicResource S.①CSVaed111}" Foreground="#1976D2"
+                           FontWeight="SemiBold" Margin="0,0,0,6"/>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox Grid.Column="0" Text="{Binding FilePath}"
+                             IsReadOnly="True"
+                             Background="#FFFFFF" Foreground="#37474F"
+                             BorderBrush="#9E9E9E" Padding="8,5" FontFamily="Consolas"/>
+                    <Button Grid.Column="1" Content="{DynamicResource S.k6f128f}"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            Background="#9E9E9E" Margin="6,0,0,0"
+                            Click="Browse_Click"/>
+                    <!-- 選項 -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="16,0,0,0">
+                        <CheckBox Content="{DynamicResource S.kf02ea1}" IsChecked="{Binding HasHeader}"
+                                  Foreground="White" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                        <TextBlock Text="{DynamicResource S.k6df989}" Foreground="#78909C" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                        <ComboBox ItemsSource="{Binding Delimiters}"
+                                  SelectedItem="{Binding SelectedDelimiter}"
+                                  Width="70" Background="#E8ECF0" Foreground="White"
+                                  BorderBrush="#9E9E9E" Padding="4,3"/>
+                    </StackPanel>
+                    <Button Grid.Column="3" Content="{DynamicResource S.kcd403e}"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            Margin="6,0,0,0" Click="Analyze_Click"/>
+                </Grid>
+            </StackPanel>
+        </Border>
+
+        <!-- ─ 步驟 2：目標資料表 ─ -->
+        <Border Grid.Row="1" Background="#EEF4FF" Padding="12,8"
+                Visibility="{Binding HasPreview, Converter={StaticResource BoolToVisibility}}">
+            <StackPanel>
+                <TextBlock Text="{DynamicResource S.②a08268}" Foreground="#1976D2"
+                           FontWeight="SemiBold" Margin="0,0,0,6"/>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                        <TextBlock Text="{DynamicResource S.k2801a2}" Foreground="#78909C" FontSize="11" Margin="0,0,0,3"/>
+                        <ComboBox ItemsSource="{Binding Databases}"
+                                  SelectedItem="{Binding TargetDatabase}"
+                                  Background="#E8ECF0" Foreground="White"
+                                  BorderBrush="#9E9E9E" Padding="6,4"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Margin="0,0,8,0">
+                        <TextBlock Text="{DynamicResource S.k7b5e7c}" Foreground="#78909C" FontSize="11" Margin="0,0,0,3"/>
+                        <ComboBox ItemsSource="{Binding Tables}"
+                                  SelectedItem="{Binding TargetTable}"
+                                  Background="#E8ECF0" Foreground="White"
+                                  BorderBrush="#9E9E9E" Padding="6,4"/>
+                    </StackPanel>
+                    <CheckBox Grid.Column="2" Content="{DynamicResource S.k82e457}"
+                              IsChecked="{Binding SkipErrors}"
+                              Foreground="White" VerticalAlignment="Bottom" Margin="0,0,0,4"/>
+                </Grid>
+            </StackPanel>
+        </Border>
+
+        <!-- ─ 步驟 3：欄位對映 標題 ─ -->
+        <Border Grid.Row="2" Background="#F0F2F5" Padding="12,6"
+                Visibility="{Binding HasMapping, Converter={StaticResource BoolToVisibility}}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="60"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="{DynamicResource S.③CSV16dce4}"   Foreground="#1976D2" FontWeight="SemiBold"/>
+                <TextBlock Grid.Column="1" Text="{DynamicResource S.kfebfd2}"   Foreground="#1976D2" FontWeight="SemiBold"/>
+                <TextBlock Grid.Column="2" Text="{DynamicResource S.ka903e8}"        Foreground="#9E9E9E"/>
+                <TextBlock Grid.Column="3" Text="{DynamicResource S.kfa7279}"          Foreground="#9E9E9E" HorizontalAlignment="Center"/>
+            </Grid>
+        </Border>
+
+        <!-- ─ 欄位對映列表 ─ -->
+        <ScrollViewer Grid.Row="3"
+                      Visibility="{Binding HasMapping, Converter={StaticResource BoolToVisibility}}"
+                      VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding Mapping}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Padding="12,4" BorderBrush="#F0F2F5" BorderThickness="0,0,0,1">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Skip}" Value="True">
+                                            <Setter Property="Background" Value="#333333"/>
+                                            <Setter Property="Opacity"    Value="0.5"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="200"/>
+                                    <ColumnDefinition Width="200"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="60"/>
+                                </Grid.ColumnDefinitions>
+                                <!-- CSV 欄位名 -->
+                                <TextBlock Grid.Column="0" Text="{Binding CsvHeader}"
+                                           Foreground="#37474F" FontFamily="Consolas"
+                                           VerticalAlignment="Center" FontSize="12"/>
+                                <!-- 目標欄位下拉 -->
+                                <ComboBox Grid.Column="1" Margin="0,2,8,2"
+                                          ItemsSource="{Binding DataContext.TableColumns,
+                                                        RelativeSource={RelativeSource AncestorType=Window}}"
+                                          SelectedItem="{Binding MappedColumn}"
+                                          Background="#E8ECF0" Foreground="White"
+                                          BorderBrush="#9E9E9E" Padding="4,3" FontSize="12"/>
+                                <!-- 樣本值 -->
+                                <TextBlock Grid.Column="2" Text="{Binding SampleValue}"
+                                           Foreground="#9E9E9E" FontFamily="Consolas"
+                                           VerticalAlignment="Center" FontSize="11"
+                                           TextTrimming="CharacterEllipsis"/>
+                                <!-- 跳過 -->
+                                <CheckBox Grid.Column="3" IsChecked="{Binding Skip}"
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <!-- ─ 預覽列 ─ -->
+        <Border Grid.Row="4" Background="#FFFFFF" MaxHeight="100"
+                Visibility="{Binding HasPreview, Converter={StaticResource BoolToVisibility}}"
+                BorderBrush="#F0F2F5" BorderThickness="0,1,0,0">
+            <StackPanel Margin="12,6">
+                <TextBlock Text="{Binding PreviewInfo}" Foreground="#78909C" FontSize="11"/>
+            </StackPanel>
+        </Border>
+
+        <!-- ─ 進度 + 按鈕 ─ -->
+        <Border Grid.Row="5" Background="#F0F2F5" Padding="12,8">
+            <Grid>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <ProgressBar x:Name="ImportProgress"
+                                 Value="{Binding ProgressValue}"
+                                 Maximum="{Binding ProgressMax}"
+                                 Width="200" Height="6"
+                                 Foreground="#1976D2"
+                                 Visibility="{Binding IsImporting, Converter={StaticResource BoolToVisibility}}"
+                                 Margin="0,0,10,0"/>
+                    <TextBlock Text="{Binding StatusText}"
+                               Foreground="{StaticResource TextPrimaryBrush}"
+                               FontSize="12" VerticalAlignment="Center"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="{DynamicResource S.k51fc16}"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            Background="#1E8E3E"
+                            IsEnabled="{Binding CanImport}"
+                            Click="Import_Click" Margin="0,0,6,0"/>
+                    <Button Content="{DynamicResource S.k625fb2}"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            Background="#9E9E9E" Click="Cancel_Click"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

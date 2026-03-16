@@ -1,0 +1,239 @@
+<Window x:Class="MySQLManager.Views.MonitorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:MySQLManager.Views"
+        Title="{DynamicResource S.k3803d9}" Height="660" Width="960"
+        MinWidth="720" MinHeight="520"
+        Background="#F4F6F9"
+        Foreground="#37474F"
+        FontFamily="Segoe UI, Microsoft JhengHei, sans-serif"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResize">
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Resources/Styles/AppStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <local:MW_BoolToVisibilityConverter        x:Key="BoolToVisibility"/>
+            <local:MW_InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibility"/>
+            <local:MW_InverseBoolConverter             x:Key="InverseBool"/>
+            <local:MW_NullToVisibilityConverter        x:Key="NullToVisibility"/>
+            <local:MW_NullOrEmptyToVisibilityConverter x:Key="NullOrEmptyToVisibility"/>
+            <local:MW_StringToBrushConverter           x:Key="StringToBrush"/>
+
+
+            <Style x:Key="StatCardStyle" TargetType="Border">
+                <Setter Property="Background"   Value="#F0F2F5"/>
+                <Setter Property="CornerRadius" Value="6"/>
+                <Setter Property="Padding"      Value="16,12"/>
+                <Setter Property="Margin"       Value="0,0,10,0"/>
+                <Setter Property="MinWidth"     Value="170"/>
+            </Style>
+
+            <Style x:Key="CardLabelStyle" TargetType="TextBlock">
+                <Setter Property="Foreground" Value="#78909C"/>
+                <Setter Property="FontSize"   Value="11"/>
+                <Setter Property="Margin"     Value="0,0,0,4"/>
+            </Style>
+
+            <Style x:Key="CardValueStyle" TargetType="TextBlock">
+                <Setter Property="Foreground" Value="#1A1A2E"/>
+                <Setter Property="FontSize"   Value="26"/>
+                <Setter Property="FontWeight" Value="Bold"/>
+            </Style>
+
+            <Style x:Key="CardSubStyle" TargetType="TextBlock">
+                <Setter Property="Foreground" Value="#BDBDBD"/>
+                <Setter Property="FontSize"   Value="11"/>
+            </Style>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="160"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- 工具列 -->
+        <Border Grid.Row="0" Background="#F0F2F5" Padding="10,7">
+            <Grid>
+                <StackPanel Orientation="Horizontal">
+                    <Button x:Name="AutoBtn"
+                            Content="{DynamicResource S.k0deea3}" Click="ToggleAuto_Click"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            Background="#1E8E3E" Margin="0,0,6,0"/>
+                    <Button Content="{DynamicResource S.kc4a405}" Click="Refresh_Click"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            Background="#9E9E9E" Margin="0,0,12,0"/>
+                    <TextBlock Text="{DynamicResource S.ke160c7}" Foreground="#78909C"
+                               VerticalAlignment="Center" Margin="0,0,4,0"/>
+                    <ComboBox ItemsSource="{Binding Intervals}"
+                              SelectedItem="{Binding SelectedInterval}"
+                              Width="70" Padding="4,3"/>
+                    <TextBlock Text="{DynamicResource S.k0c1fec}" Foreground="#78909C"
+                               VerticalAlignment="Center" Margin="4,0,0,0"/>
+                </StackPanel>
+                <TextBlock Text="{Binding LastUpdated}"
+                           Foreground="#9E9E9E" FontSize="11"
+                           HorizontalAlignment="Right" VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+
+        <!-- 統計卡片列 -->
+        <ScrollViewer Grid.Row="1"
+                      HorizontalScrollBarVisibility="Auto"
+                      VerticalScrollBarVisibility="Disabled">
+            <StackPanel Orientation="Horizontal" Margin="12,10">
+
+                <!-- 連線狀態 -->
+                <Border Style="{StaticResource StatCardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="{DynamicResource S.k221c5f}" Style="{StaticResource CardLabelStyle}"/>
+                        <TextBlock Style="{StaticResource CardValueStyle}">
+                            <Run Text="{Binding Status.ThreadsConnected}" FontSize="28" FontWeight="Bold"/>
+                            <Run Text=" / "/>
+                            <Run Text="{Binding Status.MaxConnections}" FontSize="16" Foreground="#9E9E9E"/>
+                        </TextBlock>
+                        <ProgressBar Value="{Binding ConnectionUsagePct}" Maximum="100"
+                                     Height="4" Foreground="#1976D2" Background="#F0F2F5"
+                                     Margin="0,6,0,0"/>
+                        <TextBlock Style="{StaticResource CardSubStyle}">
+                            <Run Text="{DynamicResource S.k80aabb}"/>
+                            <Run Text="{Binding Status.ThreadsRunning}" Foreground="#E65100"/>
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+
+                <!-- 查詢統計 -->
+                <Border Style="{StaticResource StatCardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="{DynamicResource S.ka43e94}" Style="{StaticResource CardLabelStyle}"/>
+                        <TextBlock Text="{Binding Status.QueriesTotal, StringFormat='{}{0:N0}'}"
+                                   Style="{StaticResource CardValueStyle}"/>
+                        <TextBlock Style="{StaticResource CardSubStyle}" Margin="0,6,0,0">
+                            <Run Text="SELECT "  Foreground="{StaticResource SuccessBrush}"/>
+                            <Run Text="{Binding Status.ComSelect}"/>
+                            <Run Text="  INSERT " Foreground="#1976D2"/>
+                            <Run Text="{Binding Status.ComInsert}"/>
+                        </TextBlock>
+                        <TextBlock Style="{StaticResource CardSubStyle}">
+                            <Run Text="UPDATE "  Foreground="#E65100"/>
+                            <Run Text="{Binding Status.ComUpdate}"/>
+                            <Run Text="  DELETE " Foreground="{StaticResource ErrorBrush}"/>
+                            <Run Text="{Binding Status.ComDelete}"/>
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+
+                <!-- 網路流量 -->
+                <Border Style="{StaticResource StatCardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="{DynamicResource S.kde2cf5}" Style="{StaticResource CardLabelStyle}"/>
+                        <TextBlock Text="{Binding Status.BytesSentLabel}"
+                                   Style="{StaticResource CardValueStyle}"/>
+                        <TextBlock Style="{StaticResource CardSubStyle}" Margin="0,6,0,0">
+                            <Run Text="{DynamicResource S.kc7efef}"/>
+                            <Run Text="{Binding Status.BytesSentLabel}" Foreground="#1976D2"/>
+                        </TextBlock>
+                        <TextBlock Style="{StaticResource CardSubStyle}">
+                            <Run Text="{DynamicResource S.k441f42}"/>
+                            <Run Text="{Binding Status.BytesReceivedLabel}" Foreground="{StaticResource SuccessBrush}"/>
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+
+                <!-- 運行時間 -->
+                <Border Style="{StaticResource StatCardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="{DynamicResource S.kee220c}" Style="{StaticResource CardLabelStyle}"/>
+                        <TextBlock Text="{Binding Status.UptimeLabel}"
+                                   Style="{StaticResource CardValueStyle}"
+                                   FontFamily="Consolas"/>
+                        <TextBlock Style="{StaticResource CardSubStyle}" Margin="0,6,0,0">
+                            <Run Text="{DynamicResource S.k350e7d}"/>
+                            <Run Text="{Binding Status.SlowQueries}" Foreground="#E65100"/>
+                        </TextBlock>
+                        <TextBlock Style="{StaticResource CardSubStyle}">
+                            <Run Text="{DynamicResource S.k2228d5}"/>
+                            <Run Text="{Binding Status.OpenTables}"/>
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+
+                <!-- Full Join 警告 -->
+                <Border Style="{StaticResource StatCardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="{DynamicResource S.FullJoin4912a8}" Style="{StaticResource CardLabelStyle}"/>
+                        <TextBlock Text="{Binding Status.SelectFullJoin}"
+                                   Foreground="{Binding FullJoinColor, Converter={StaticResource StringToBrush}}"
+                                   FontSize="28" FontWeight="Bold"/>
+                        <TextBlock Text="{DynamicResource S.JOINda692c}"
+                                   Style="{StaticResource CardSubStyle}" Margin="0,6,0,0"/>
+                        <Border CornerRadius="3" Padding="6,2" Margin="0,4,0,0"
+                                Background="{Binding FullJoinColor, Converter={StaticResource StringToBrush}}">
+                            <TextBlock Text="{Binding FullJoinLabel}"
+                                       Foreground="White" FontSize="10"
+                                       HorizontalAlignment="Center"/>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- 進程標題列 -->
+        <Border Grid.Row="2" Background="#F0F2F5" Padding="12,7">
+            <Grid>
+                <TextBlock Text="{DynamicResource S.PROCESSL0ed9f1}"
+                           Foreground="#1976D2" FontWeight="SemiBold"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="{DynamicResource S.Kill0df421}" Click="KillProcess_Click"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            Background="#D93025" Padding="8,3"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- 進程列表 -->
+        <DataGrid Grid.Row="3" x:Name="ProcessGrid"
+                  ItemsSource="{Binding Status.Processes}"
+                  AutoGenerateColumns="False" IsReadOnly="True"
+                  Background="Transparent" Foreground="#37474F"
+                  GridLinesVisibility="All"
+                  HorizontalGridLinesBrush="#F0F2F5"
+                  VerticalGridLinesBrush="#F0F2F5"
+                  HeadersVisibility="Column" BorderThickness="0"
+                  FontFamily="Consolas" FontSize="12"
+                  RowBackground="Transparent"
+                  AlternatingRowBackground="#FAFBFC"
+                  SelectionMode="Single">
+            <DataGrid.RowStyle>
+                <Style TargetType="DataGridRow">
+                    <Setter Property="Background"
+                            Value="{Binding RowColor, Converter={StaticResource StringToBrush}}"/>
+                </Style>
+            </DataGrid.RowStyle>
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="ID"      Binding="{Binding Id}"        Width="55"/>
+                <DataGridTextColumn Header="User"    Binding="{Binding User}"      Width="90"/>
+                <DataGridTextColumn Header="Host"    Binding="{Binding Host}"      Width="130"/>
+                <DataGridTextColumn Header="DB"      Binding="{Binding Db}"        Width="90"/>
+                <DataGridTextColumn Header="Command" Binding="{Binding Command}"   Width="80"/>
+                <DataGridTextColumn Header="Time"    Binding="{Binding TimeLabel}" Width="55"/>
+                <DataGridTextColumn Header="State"   Binding="{Binding State}"     Width="120"/>
+                <DataGridTextColumn Header="Info"    Binding="{Binding Info}"      Width="*"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <!-- 狀態列 -->
+        <Border Grid.Row="4" Background="#F0F2F5" Padding="12,5">
+            <TextBlock Text="{Binding StatusText}"
+                       Foreground="#9E9E9E" FontSize="11"/>
+        </Border>
+    </Grid>
+</Window>

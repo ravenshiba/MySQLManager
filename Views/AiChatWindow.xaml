@@ -1,0 +1,147 @@
+<Window x:Class="MySQLManager.Views.AiChatWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:helpers="clr-namespace:MySQLManager.Helpers"
+        Title="{DynamicResource S.AISQLfbc5f7}" Height="620" Width="760"
+        MinWidth="600" MinHeight="480"
+        Background="#F0F2F5"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResize">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Resources/Styles/AppStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <helpers:BoolToVisibilityConverter        x:Key="BoolToVisibility"/>
+            <helpers:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibility"/>
+            <helpers:InverseBoolConverter             x:Key="InverseBool"/>
+            <helpers:NullToVisibilityConverter        x:Key="NullToVisibility"/>
+            <helpers:NullOrEmptyToVisibilityConverter x:Key="NullOrEmptyToVisibility"/>
+            <helpers:StringToBrushConverter           x:Key="StringToBrush"/>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>  <!-- 標題列 -->
+            <RowDefinition Height="*"/>     <!-- 對話區 -->
+            <RowDefinition Height="Auto"/>  <!-- 輸入區 -->
+        </Grid.RowDefinitions>
+
+        <!-- ══ 標題列 ══ -->
+        <Border Grid.Row="0" Background="{StaticResource DeepBrush}"
+                BorderThickness="0,0,0,1" BorderBrush="{StaticResource BorderBrush}"
+                Padding="16,10">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
+                    <TextBlock Text="🤖" FontSize="20" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="{DynamicResource S.AISQLfbc5f7}" FontSize="14" FontWeight="Bold"
+                                   Foreground="{StaticResource TextPrimaryBrush}"/>
+                        <TextBlock Text="{DynamicResource S.Groqllam0879b3}"
+                                   FontSize="10" Foreground="{StaticResource TextSecondaryBrush}"/>
+                    </StackPanel>
+                </StackPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Content="{DynamicResource S.ke4529d}" Click="ClearChat_Click"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            Padding="10,5" Margin="0,0,8,0"/>
+                    <Button Content="⚙️ API Key" Click="ApiKey_Click"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            Padding="10,5"/>
+                </StackPanel>
+                <!-- Schema 提示（中間） -->
+                <StackPanel VerticalAlignment="Center" Margin="20,0" Orientation="Horizontal">
+                    <TextBlock Text="{DynamicResource S.Schema097f5a}" FontSize="11"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               VerticalAlignment="Center" Margin="0,0,6,0"/>
+                    <TextBox x:Name="SchemaHintBox"
+                             Width="220" Height="26" FontSize="11" Padding="6,3"
+                             BorderBrush="{StaticResource BorderBrush}"
+                             ToolTip="{DynamicResource S.SchemaAI1b1a0b}"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- ══ 對話區 ══ -->
+        <ScrollViewer Grid.Row="1" x:Name="ChatScroller"
+                      VerticalScrollBarVisibility="Auto"
+                      Padding="16,12">
+            <StackPanel x:Name="ChatPanel" VirtualizingPanel.IsVirtualizing="False"/>
+        </ScrollViewer>
+
+        <!-- 空白提示 -->
+        <StackPanel Grid.Row="1" x:Name="EmptyHint"
+                    HorizontalAlignment="Center" VerticalAlignment="Center">
+            <TextBlock Text="🤖" FontSize="48" HorizontalAlignment="Center"
+                       Foreground="#DADCE0"/>
+            <TextBlock Text="{DynamicResource S.AISQL61e34c}" FontSize="15" FontWeight="SemiBold"
+                       HorizontalAlignment="Center" Margin="0,12,0,0"
+                       Foreground="{StaticResource TextPrimaryBrush}"/>
+            <TextBlock Text="{DynamicResource S.MySQLSQLba5e60}" FontSize="12"
+                       HorizontalAlignment="Center" Margin="0,6,0,0"
+                       Foreground="{StaticResource TextSecondaryBrush}"/>
+            <!-- 快速提示 -->
+            <WrapPanel HorizontalAlignment="Center" Margin="0,20,0,0">
+                <Button Content="{DynamicResource S.SELECTf16d71}" Click="QuickPrompt_Click"
+                        Tag="幫我寫一個 SELECT 查詢，從 users 表取出所有 active=1 的用戶"
+                        Style="{StaticResource SecondaryButtonStyle}" Margin="4" Padding="10,6"/>
+                <Button Content="{DynamicResource S.JOIN76ae4f}" Click="QuickPrompt_Click"
+                        Tag="請解釋 LEFT JOIN、INNER JOIN、RIGHT JOIN 的差異，並給出例子"
+                        Style="{StaticResource SecondaryButtonStyle}" Margin="4" Padding="10,6"/>
+                <Button Content="{DynamicResource S.k32d6b6}" Click="QuickPrompt_Click"
+                        Tag="如何優化 MySQL 查詢效能？有哪些常見的 INDEX 使用技巧？"
+                        Style="{StaticResource SecondaryButtonStyle}" Margin="4" Padding="10,6"/>
+                <Button Content="{DynamicResource S.k91a3c1}" Click="QuickPrompt_Click"
+                        Tag="請幫我解釋這個 MySQL 錯誤："
+                        Style="{StaticResource SecondaryButtonStyle}" Margin="4" Padding="10,6"/>
+            </WrapPanel>
+        </StackPanel>
+
+        <!-- ══ 輸入區 ══ -->
+        <Border Grid.Row="2" Background="White"
+                BorderThickness="0,1,0,0" BorderBrush="{StaticResource BorderBrush}"
+                Padding="16,12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Border Grid.Column="0"
+                        BorderBrush="{StaticResource AccentBrush}"
+                        BorderThickness="1" CornerRadius="8"
+                        Margin="0,0,10,0">
+                    <TextBox x:Name="InputBox"
+                             MinHeight="42" MaxHeight="120"
+                             Padding="12,10"
+                             FontSize="13"
+                             AcceptsReturn="True"
+                             TextWrapping="Wrap"
+                             VerticalScrollBarVisibility="Auto"
+                             BorderThickness="0"
+                             Background="Transparent"
+                             ToolTip="{DynamicResource S.EnterShid409b9}"
+                             KeyDown="InputBox_KeyDown"/>
+                </Border>
+                <Button Grid.Column="1" x:Name="SendBtn"
+                        Content="{DynamicResource S.k68d7d6}" Click="Send_Click"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        Background="{StaticResource AccentBrush}"
+                        Width="80" Height="42"
+                        FontSize="13" FontWeight="SemiBold"/>
+            </Grid>
+        </Border>
+
+        <!-- 載入遮罩 -->
+        <Border Grid.Row="1" x:Name="LoadingOverlay"
+                Background="#88FFFFFF" Visibility="Collapsed">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <ProgressBar IsIndeterminate="True" Width="200" Height="3"
+                             Foreground="{StaticResource AccentBrush}"/>
+                <TextBlock Text="{DynamicResource S.AI9858b9}" FontSize="13" Margin="0,12,0,0"
+                           HorizontalAlignment="Center"
+                           Foreground="{StaticResource TextSecondaryBrush}"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

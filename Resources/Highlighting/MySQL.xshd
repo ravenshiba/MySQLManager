@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SyntaxDefinition name="MySQL" extensions=".sql" xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
+
+  <Color name="Comment"      foreground="#6A9955" fontStyle="italic"/>
+  <Color name="String"       foreground="#CE9178"/>
+  <Color name="Keyword"      foreground="#569CD6" fontWeight="bold"/>
+  <Color name="DMLKeyword"   foreground="#C586C0" fontWeight="bold"/>
+  <Color name="DDLKeyword"   foreground="#4EC9B0" fontWeight="bold"/>
+  <Color name="Function"     foreground="#DCDCAA"/>
+  <Color name="Number"       foreground="#B5CEA8"/>
+  <Color name="Operator"     foreground="#D4D4D4"/>
+  <Color name="BacktickIdent"foreground="#9CDCFE"/>
+
+  <RuleSet>
+    <!-- 單行注釋 -- -->
+    <Span color="Comment" begin="--" end="\n"/>
+    <!-- 單行注釋 # -->
+    <Span color="Comment" begin="#" end="\n"/>
+    <!-- 多行注釋 -->
+    <Span color="Comment" multiline="true" begin="/\*" end="\*/"/>
+
+    <!-- 單引號字串 -->
+    <Span color="String" begin="'" end="'" escapecharacter="\"/>
+    <!-- 雙引號字串 -->
+    <Span color="String" begin="&quot;" end="&quot;" escapecharacter="\"/>
+    <!-- 反引號識別符 -->
+    <Span color="BacktickIdent" begin="`" end="`"/>
+
+    <!-- 數字 -->
+    <Rule color="Number">
+      \b[\d]+(\.\d+)?\b
+    </Rule>
+
+    <!-- DML 關鍵字（紫色） -->
+    <Keywords color="DMLKeyword">
+      <Word>SELECT</Word><Word>INSERT</Word><Word>UPDATE</Word><Word>DELETE</Word>
+      <Word>FROM</Word><Word>INTO</Word><Word>VALUES</Word><Word>SET</Word>
+      <Word>WHERE</Word><Word>HAVING</Word><Word>GROUP</Word><Word>ORDER</Word>
+      <Word>BY</Word><Word>LIMIT</Word><Word>OFFSET</Word>
+      <Word>JOIN</Word><Word>LEFT</Word><Word>RIGHT</Word><Word>INNER</Word>
+      <Word>OUTER</Word><Word>CROSS</Word><Word>ON</Word><Word>USING</Word>
+      <Word>UNION</Word><Word>ALL</Word><Word>DISTINCT</Word>
+    </Keywords>
+
+    <!-- DDL 關鍵字（青色） -->
+    <Keywords color="DDLKeyword">
+      <Word>CREATE</Word><Word>DROP</Word><Word>ALTER</Word><Word>TRUNCATE</Word>
+      <Word>TABLE</Word><Word>DATABASE</Word><Word>INDEX</Word><Word>VIEW</Word>
+      <Word>PROCEDURE</Word><Word>FUNCTION</Word><Word>TRIGGER</Word><Word>EVENT</Word>
+      <Word>ADD</Word><Word>MODIFY</Word><Word>CHANGE</Word><Word>RENAME</Word>
+      <Word>COLUMN</Word><Word>CONSTRAINT</Word><Word>PRIMARY</Word><Word>FOREIGN</Word>
+      <Word>KEY</Word><Word>UNIQUE</Word><Word>AUTO_INCREMENT</Word><Word>DEFAULT</Word>
+      <Word>NOT</Word><Word>NULL</Word><Word>REFERENCES</Word>
+      <Word>ENGINE</Word><Word>CHARSET</Word><Word>COLLATE</Word>
+    </Keywords>
+
+    <!-- 一般關鍵字（藍色） -->
+    <Keywords color="Keyword">
+      <Word>AND</Word><Word>OR</Word><Word>IN</Word><Word>NOT</Word>
+      <Word>EXISTS</Word><Word>LIKE</Word><Word>BETWEEN</Word><Word>IS</Word>
+      <Word>AS</Word><Word>CASE</Word><Word>WHEN</Word><Word>THEN</Word>
+      <Word>ELSE</Word><Word>END</Word><Word>IF</Word>
+      <Word>BEGIN</Word><Word>COMMIT</Word><Word>ROLLBACK</Word><Word>TRANSACTION</Word>
+      <Word>SHOW</Word><Word>DESCRIBE</Word><Word>DESC</Word><Word>EXPLAIN</Word>
+      <Word>USE</Word><Word>CALL</Word><Word>EXEC</Word>
+      <Word>TRUE</Word><Word>FALSE</Word>
+      <Word>UNSIGNED</Word><Word>SIGNED</Word><Word>ZEROFILL</Word>
+      <Word>INT</Word><Word>BIGINT</Word><Word>SMALLINT</Word><Word>TINYINT</Word>
+      <Word>DECIMAL</Word><Word>FLOAT</Word><Word>DOUBLE</Word>
+      <Word>VARCHAR</Word><Word>CHAR</Word><Word>TEXT</Word><Word>LONGTEXT</Word>
+      <Word>MEDIUMTEXT</Word><Word>TINYTEXT</Word>
+      <Word>DATE</Word><Word>DATETIME</Word><Word>TIMESTAMP</Word><Word>TIME</Word><Word>YEAR</Word>
+      <Word>BLOB</Word><Word>LONGBLOB</Word><Word>MEDIUMBLOB</Word>
+      <Word>ENUM</Word><Word>SET</Word><Word>JSON</Word><Word>BOOLEAN</Word>
+      <Word>WITH</Word><Word>RECURSIVE</Word><Word>OVER</Word><Word>PARTITION</Word>
+      <Word>ROW_NUMBER</Word><Word>RANK</Word><Word>DENSE_RANK</Word>
+      <Word>REPLACE</Word><Word>IGNORE</Word><Word>DUPLICATE</Word>
+    </Keywords>
+
+    <!-- 函數（黃色） -->
+    <Keywords color="Function">
+      <Word>COUNT</Word><Word>SUM</Word><Word>AVG</Word><Word>MIN</Word><Word>MAX</Word>
+      <Word>GROUP_CONCAT</Word><Word>CONCAT</Word><Word>CONCAT_WS</Word>
+      <Word>LENGTH</Word><Word>CHAR_LENGTH</Word><Word>SUBSTRING</Word><Word>SUBSTR</Word>
+      <Word>LEFT</Word><Word>RIGHT</Word><Word>TRIM</Word><Word>LTRIM</Word><Word>RTRIM</Word>
+      <Word>UPPER</Word><Word>LOWER</Word><Word>UCASE</Word><Word>LCASE</Word>
+      <Word>REPLACE</Word><Word>INSTR</Word><Word>LOCATE</Word><Word>POSITION</Word>
+      <Word>LPAD</Word><Word>RPAD</Word><Word>REPEAT</Word><Word>REVERSE</Word>
+      <Word>FORMAT</Word><Word>FIELD</Word><Word>FIND_IN_SET</Word>
+      <Word>NOW</Word><Word>CURDATE</Word><Word>CURTIME</Word><Word>SYSDATE</Word>
+      <Word>DATE_FORMAT</Word><Word>DATE_ADD</Word><Word>DATE_SUB</Word><Word>DATEDIFF</Word>
+      <Word>YEAR</Word><Word>MONTH</Word><Word>DAY</Word><Word>HOUR</Word>
+      <Word>MINUTE</Word><Word>SECOND</Word><Word>UNIX_TIMESTAMP</Word><Word>FROM_UNIXTIME</Word>
+      <Word>ROUND</Word><Word>FLOOR</Word><Word>CEIL</Word><Word>CEILING</Word>
+      <Word>ABS</Word><Word>MOD</Word><Word>POWER</Word><Word>SQRT</Word><Word>RAND</Word>
+      <Word>CAST</Word><Word>CONVERT</Word><Word>COALESCE</Word><Word>IFNULL</Word>
+      <Word>NULLIF</Word><Word>IF</Word><Word>ISNULL</Word>
+      <Word>UUID</Word><Word>MD5</Word><Word>SHA1</Word><Word>SHA2</Word>
+      <Word>JSON_EXTRACT</Word><Word>JSON_VALUE</Word><Word>JSON_OBJECT</Word><Word>JSON_ARRAY</Word>
+      <Word>LAST_INSERT_ID</Word><Word>ROW_COUNT</Word><Word>DATABASE</Word><Word>USER</Word><Word>VERSION</Word>
+    </Keywords>
+
+  </RuleSet>
+</SyntaxDefinition>

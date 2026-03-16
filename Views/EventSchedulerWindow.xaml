@@ -1,0 +1,233 @@
+<Window x:Class="MySQLManager.Views.EventSchedulerWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="{DynamicResource S.MySQLEve831036}"
+        Height="660" Width="1020"
+        MinHeight="500" MinWidth="760"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResize">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="300" MinWidth="220"/>
+            <ColumnDefinition Width="5"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- ══ Left: Event list ══ -->
+        <Grid Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Toolbar -->
+            <Border Grid.Row="0" Background="{StaticResource SecondaryBrush}" Padding="8,6">
+            <StackPanel Orientation="Horizontal">
+                <Button Content="{DynamicResource S.kd1dbe9}" Click="NewEvent_Click"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        Padding="10,4" Margin="0,0,6,0"/>
+                <Button Content="🔄" Click="Refresh_Click"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Padding="8,4" ToolTip="{DynamicResource S.k68ca89}"/>
+            </StackPanel>
+            </Border>
+
+            <!-- Event list -->
+            <ListBox Grid.Row="1" x:Name="EventList"
+                     BorderThickness="0,1,1,0"
+                     BorderBrush="{StaticResource BorderBrush}"
+                     SelectionChanged="EventList_SelectionChanged">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Margin="4,6">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="{Binding StatusIcon}"
+                                       FontSize="16" VerticalAlignment="Center"
+                                       Margin="0,0,8,0"/>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="{Binding Name}" FontWeight="Medium"
+                                           FontSize="13" TextTrimming="CharacterEllipsis"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding TypeLabel}"
+                                               FontSize="11" Foreground="#7B61FF"
+                                               Margin="0,2,6,0"/>
+                                    <TextBlock Text="{Binding ScheduleLabel}"
+                                               FontSize="11"
+                                               Foreground="{StaticResource TextSecondaryBrush}"
+                                               Margin="0,2,0,0"/>
+                                </StackPanel>
+                                <TextBlock Text="{Binding LastExecLabel}"
+                                           FontSize="10"
+                                           Foreground="{StaticResource TextSecondaryBrush}"/>
+                            </StackPanel>
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <!-- Bottom actions -->
+            <Border Grid.Row="2" Background="{StaticResource SecondaryBrush}" Padding="8,6">
+            <StackPanel Orientation="Horizontal">
+                <Button Content="{DynamicResource S.k9eb738}" Click="Enable_Click"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Padding="8,4" Margin="0,0,4,0" Foreground="#1B5E20"/>
+                <Button Content="{DynamicResource S.kb2f88d}" Click="Disable_Click"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Padding="8,4" Margin="0,0,4,0"/>
+                <Button Content="{DynamicResource S.kfba47c}" Click="Delete_Click"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Padding="8,4" Foreground="#B71C1C"/>
+            </StackPanel>
+            </Border>
+        </Grid>
+
+        <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch"
+                      Background="Transparent"/>
+
+        <!-- ══ Right: Editor ══ -->
+        <Grid Grid.Column="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Editor toolbar -->
+            <Border Grid.Row="0" Background="{StaticResource SecondaryBrush}" Padding="8,6"
+                    BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
+            <StackPanel Orientation="Horizontal">
+                <Button Content="{DynamicResource S.Eventd2f7a8}" Click="Save_Click"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        Padding="12,4" Margin="0,0,8,0"/>
+                <Button Content="{DynamicResource S.SQL36a961}" Click="CopySql_Click"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Padding="10,4"/>
+            </StackPanel>
+            </Border>
+
+            <!-- Form -->
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" MaxHeight="260">
+                <Grid Margin="12,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="120"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="120"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Name -->
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="{DynamicResource S.Eventbf36a4}" FontSize="12"
+                               Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+                    <TextBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3"
+                             x:Name="NameBox" FontSize="12" Padding="6,4" Margin="0,0,0,8"/>
+
+                    <!-- Type -->
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="{DynamicResource S.k84c1fa}" FontSize="12"
+                               Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+                    <ComboBox Grid.Row="1" Grid.Column="1" x:Name="TypeCombo"
+                              FontSize="12" Padding="6,4" Margin="0,0,12,8"
+                              SelectionChanged="TypeCombo_SelectionChanged">
+                        <ComboBoxItem Content="{DynamicResource S.RECURRIN13392d}" Tag="RECURRING" IsSelected="True"/>
+                        <ComboBoxItem Content="{DynamicResource S.ONETIMEff3edf}"   Tag="ONE TIME"/>
+                    </ComboBox>
+
+                    <!-- Status -->
+                    <TextBlock Grid.Row="1" Grid.Column="2" Text="{DynamicResource S.kbd91f6}" FontSize="12"
+                               Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+                    <ComboBox Grid.Row="1" Grid.Column="3" x:Name="StatusCombo"
+                              FontSize="12" Padding="6,4" Margin="0,0,0,8">
+                        <ComboBoxItem Content="{DynamicResource S.ENABLEDab42a5}"  Tag="ENABLED" IsSelected="True"/>
+                        <ComboBoxItem Content="{DynamicResource S.DISABLED52067b}" Tag="DISABLED"/>
+                    </ComboBox>
+
+                    <!-- RECURRING fields -->
+                    <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="4"
+                                x:Name="RecurringPanel" Orientation="Horizontal" Margin="0,0,0,8">
+                        <TextBlock Text="{DynamicResource S.k406bec}" FontSize="12" VerticalAlignment="Center" Margin="0,0,8,0"
+                                   Foreground="{StaticResource TextSecondaryBrush}"/>
+                        <TextBox x:Name="IntervalValueBox" Width="60" FontSize="12" Padding="6,4" Text="1" Margin="0,0,8,0"/>
+                        <ComboBox x:Name="IntervalFieldCombo" Width="120" FontSize="12" Padding="6,4">
+                            <ComboBoxItem Content="SECOND"/>
+                            <ComboBoxItem Content="MINUTE"/>
+                            <ComboBoxItem Content="HOUR" IsSelected="True"/>
+                            <ComboBoxItem Content="DAY"/>
+                            <ComboBoxItem Content="WEEK"/>
+                            <ComboBoxItem Content="MONTH"/>
+                        </ComboBox>
+                    </StackPanel>
+
+                    <!-- ONE TIME field -->
+                    <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="4"
+                                x:Name="OneTimePanel" Orientation="Horizontal"
+                                Margin="0,0,0,8" Visibility="Collapsed">
+                        <TextBlock Text="{DynamicResource S.k43646c}" FontSize="12" VerticalAlignment="Center"
+                                   Margin="0,0,8,0" Foreground="{StaticResource TextSecondaryBrush}"/>
+                        <DatePicker x:Name="ExecuteDatePicker" Width="160" FontSize="12"/>
+                        <TextBox x:Name="ExecuteTimeBox" Width="80" FontSize="12"
+                                 Padding="6,4" Margin="8,0,0,0" Text="00:00:00"
+                                 ToolTip="{DynamicResource S.HHmmss5a3dd7}"/>
+                    </StackPanel>
+
+                    <!-- STARTS / ENDS (for RECURRING) -->
+                    <StackPanel Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="4"
+                                x:Name="StartsEndsPanel" Orientation="Horizontal"
+                                Margin="0,0,0,8">
+                        <TextBlock Text="{DynamicResource S.k74d863}" FontSize="12" VerticalAlignment="Center"
+                                   Margin="0,0,8,0" Foreground="{StaticResource TextSecondaryBrush}"/>
+                        <DatePicker x:Name="StartsPicker" Width="150" FontSize="12" Margin="0,0,12,0"/>
+                        <TextBlock Text="{DynamicResource S.ka7104d}" FontSize="12" VerticalAlignment="Center"
+                                   Margin="0,0,8,0" Foreground="{StaticResource TextSecondaryBrush}"/>
+                        <DatePicker x:Name="EndsPicker" Width="150" FontSize="12"/>
+                    </StackPanel>
+
+                    <!-- ON COMPLETION -->
+                    <TextBlock Grid.Row="4" Grid.Column="0" Text="{DynamicResource S.k73d185}" FontSize="12"
+                               Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+                    <ComboBox Grid.Row="4" Grid.Column="1" x:Name="CompletionCombo"
+                              FontSize="12" Padding="6,4" Margin="0,0,0,4">
+                        <ComboBoxItem Content="{DynamicResource S.NOTPRESEba2ef0}" Tag="NOT PRESERVE" IsSelected="True"/>
+                        <ComboBoxItem Content="{DynamicResource S.PRESERVE875142}"          Tag="PRESERVE"/>
+                    </ComboBox>
+                </Grid>
+            </ScrollViewer>
+
+            <!-- SQL Body editor -->
+            <Border Grid.Row="2" BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="0,1,0,0" Margin="0,4,0,0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="{DynamicResource S.EventSQL953d79}"
+                               FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"
+                               Padding="12,6,12,4"/>
+                    <TextBox Grid.Row="1" x:Name="BodyBox"
+                             AcceptsReturn="True" HorizontalScrollBarVisibility="Auto"
+                             VerticalScrollBarVisibility="Auto"
+                             FontFamily="Consolas" FontSize="13" Padding="10"
+                             Background="{StaticResource PrimaryBrush}"
+                             Foreground="{StaticResource TextPrimaryBrush}"
+                             BorderThickness="0"/>
+                </Grid>
+            </Border>
+
+            <!-- Status -->
+            <TextBlock Grid.Row="3" x:Name="EditorStatus"
+                       Foreground="{StaticResource TextSecondaryBrush}"
+                       FontSize="11" Padding="12,6"/>
+        </Grid>
+    </Grid>
+</Window>

@@ -1,0 +1,75 @@
+<UserControl x:Class="MySQLManager.Views.FindReplaceBar"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Visibility="Collapsed">
+    <Border Background="{StaticResource SecondaryBrush}"
+            BorderBrush="{StaticResource BorderBrush}"
+            BorderThickness="0,1,0,0" Padding="8,6">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="180"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="180"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- 搜尋 -->
+            <TextBlock Grid.Column="0" Text="{DynamicResource S.kae03ce}" VerticalAlignment="Center"
+                       Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,6,0" FontSize="12"/>
+            <TextBox Grid.Column="1" x:Name="FindBox" FontSize="12" Padding="6,4"
+                     VerticalAlignment="Center"
+                     KeyDown="FindBox_KeyDown"
+                     TextChanged="FindBox_TextChanged"/>
+
+            <!-- 取代 -->
+            <TextBlock Grid.Column="2" Text="{DynamicResource S.k22498e}" VerticalAlignment="Center"
+                       Foreground="{StaticResource TextSecondaryBrush}"
+                       Margin="12,0,6,0" FontSize="12"
+                       x:Name="ReplaceLabel"/>
+            <TextBox Grid.Column="3" x:Name="ReplaceBox" FontSize="12" Padding="6,4"
+                     VerticalAlignment="Center"/>
+
+            <!-- 操作按鈕 -->
+            <StackPanel Grid.Column="4" Orientation="Horizontal" Margin="8,0,0,0"
+                        VerticalAlignment="Center">
+                <Button x:Name="FindPrevBtn" Content="◀" ToolTip="{DynamicResource S.ShiftEnt55cddc}"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Padding="6,3" FontSize="11" Margin="0,0,3,0"
+                        Click="FindPrev_Click"/>
+                <Button x:Name="FindNextBtn" Content="▶" ToolTip="{DynamicResource S.Enter8d0175}"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Padding="6,3" FontSize="11" Margin="0,0,3,0"
+                        Click="FindNext_Click"/>
+                <Button x:Name="ReplaceOneBtn" Content="{DynamicResource S.k17dae8}" ToolTip="{DynamicResource S.CtrlHc5e1ac}"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Padding="8,3" FontSize="11" Margin="0,0,3,0"
+                        Click="ReplaceOne_Click"/>
+                <Button x:Name="ReplaceAllBtn" Content="{DynamicResource S.k2ab65c}"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Padding="8,3" FontSize="11" Margin="0,0,8,0"
+                        Click="ReplaceAll_Click"/>
+                <!-- 選項 -->
+                <CheckBox x:Name="MatchCaseChk" Content="Aa" ToolTip="{DynamicResource S.k2c9164}"
+                          VerticalAlignment="Center" Margin="0,0,8,0" FontSize="12"
+                          Checked="Option_Changed" Unchecked="Option_Changed"/>
+                <CheckBox x:Name="WholeWordChk" Content="|W|" ToolTip="{DynamicResource S.keb9952}"
+                          VerticalAlignment="Center" FontSize="11"
+                          Checked="Option_Changed" Unchecked="Option_Changed"/>
+            </StackPanel>
+
+            <!-- 計數 -->
+            <TextBlock Grid.Column="5" x:Name="CountLabel" FontSize="11"
+                       Foreground="{StaticResource TextSecondaryBrush}"
+                       VerticalAlignment="Center" Margin="12,0,0,0"/>
+
+            <!-- 關閉 -->
+            <Button Grid.Column="6" Content="✕" FontSize="11"
+                    Style="{StaticResource SecondaryButtonStyle}"
+                    Padding="6,3" VerticalAlignment="Center"
+                    Click="Close_Click" ToolTip="{DynamicResource S.Esce010c4}"/>
+        </Grid>
+    </Border>
+</UserControl>

@@ -1,0 +1,438 @@
+<Window x:Class="MySQLManager.Views.TableDesignerView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:helpers="clr-namespace:MySQLManager.Helpers"
+        xmlns:models="clr-namespace:MySQLManager.Models"
+        Title="{DynamicResource S.kb66c06}" Height="680" Width="1000"
+        MinHeight="520" MinWidth="760"
+        Background="White"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResizeWithGrip">
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Resources/Styles/AppStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <helpers:BoolToVisibilityConverter        x:Key="BoolToVisibility"/>
+            <helpers:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibility"/>
+            <helpers:InverseBoolConverter             x:Key="InverseBool"/>
+            <helpers:NullToVisibilityConverter        x:Key="NullToVisibility"/>
+            <helpers:NullOrEmptyToVisibilityConverter x:Key="NullOrEmptyToVisibility"/>
+            <helpers:StringToBrushConverter           x:Key="StringToBrush"/>
+
+        <!-- 輸入框共用樣式 (設計器內用較緊湊) -->
+        <Style x:Key="CompactTextBox" TargetType="TextBox">
+            <Setter Property="Background"      Value="{StaticResource SecondaryBrush}"/>
+            <Setter Property="Foreground"      Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="BorderBrush"     Value="#9E9E9E"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding"         Value="6,4"/>
+            <Setter Property="FontSize"        Value="12"/>
+            <Setter Property="CaretBrush"      Value="{StaticResource AccentBrush}"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        <Style x:Key="CompactComboBox" TargetType="ComboBox">
+            <Setter Property="Background"      Value="{StaticResource SecondaryBrush}"/>
+            <Setter Property="Foreground"      Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="BorderBrush"     Value="#9E9E9E"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding"         Value="6,3"/>
+            <Setter Property="FontSize"        Value="12"/>
+            <Setter Property="Height"          Value="28"/>
+        </Style>
+        <Style x:Key="ToolBtn" TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
+            <Setter Property="Padding"    Value="10,5"/>
+            <Setter Property="FontSize"   Value="12"/>
+            <Setter Property="Margin"     Value="0,0,4,0"/>
+            <Setter Property="Background" Value="#9E9E9E"/>
+        </Style>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>  <!-- 標題工具列 -->
+            <RowDefinition Height="Auto"/>  <!-- 資料表基本資訊 -->
+            <RowDefinition Height="*"/>     <!-- 主體 (欄位/索引/預覽) -->
+            <RowDefinition Height="Auto"/>  <!-- 狀態列 -->
+        </Grid.RowDefinitions>
+
+        <!-- ═══ 標題工具列 ═══ -->
+        <Border Grid.Row="0" Background="{StaticResource PrimaryBrush}" Padding="12,8">
+            <Grid>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="🗄 " FontSize="18" VerticalAlignment="Center"/>
+                    <TextBlock VerticalAlignment="Center" FontSize="15" FontWeight="SemiBold"
+                               Foreground="{StaticResource TextPrimaryBrush}">
+                        <Run Text="{Binding Database, Mode=OneWay}"/>
+                        <Run Text=" › "/>
+                        <Run Text="{Binding TableName, Mode=OneWay, FallbackValue='新資料表'}"/>
+                    </TextBlock>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="{DynamicResource S.k22ef54}" Command="{Binding SaveCommand}"
+                            Style="{StaticResource PrimaryButtonStyle}" Margin="0,0,6,0"/>
+                    <Button Content="{DynamicResource S.kd2f41e}" Style="{StaticResource ToolBtn}"
+                            Click="CloseButton_Click"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ═══ 資料表基本資訊 ═══ -->
+        <Border Grid.Row="1" Background="{StaticResource SecondaryBrush}"
+                BorderThickness="0,0,0,1" BorderBrush="#9E9E9E" Padding="12,8">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="180"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="110"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="140"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0" Text="{DynamicResource S.k92bf4a}" VerticalAlignment="Center"
+                           Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,6,0"/>
+                <TextBox   Grid.Column="1" Text="{Binding TableName, UpdateSourceTrigger=PropertyChanged}"
+                           Style="{StaticResource CompactTextBox}"/>
+
+                <TextBlock Grid.Column="2" Text="{DynamicResource S.k072554}" VerticalAlignment="Center"
+                           Foreground="{StaticResource TextSecondaryBrush}" Margin="12,0,6,0"/>
+                <ComboBox  Grid.Column="3" ItemsSource="{Binding Engines}"
+                           SelectedItem="{Binding Engine}"
+                           Style="{StaticResource CompactComboBox}"/>
+
+                <TextBlock Grid.Column="4" Text="{DynamicResource S.k5a5726}" VerticalAlignment="Center"
+                           Foreground="{StaticResource TextSecondaryBrush}" Margin="12,0,6,0"/>
+                <ComboBox  Grid.Column="5" ItemsSource="{Binding Charsets}"
+                           SelectedItem="{Binding Charset}"
+                           Style="{StaticResource CompactComboBox}"/>
+
+                <TextBlock Grid.Column="6" Text="{DynamicResource S.k899c0c}" VerticalAlignment="Center"
+                           Foreground="{StaticResource TextSecondaryBrush}" Margin="12,0,6,0"/>
+                <ComboBox  Grid.Column="7" ItemsSource="{Binding Collations}"
+                           SelectedItem="{Binding Collation}"
+                           Style="{StaticResource CompactComboBox}"/>
+
+                <TextBlock Grid.Column="8" Text="{DynamicResource S.kc8273d}" VerticalAlignment="Center"
+                           Foreground="{StaticResource TextSecondaryBrush}" Margin="12,0,6,0"/>
+                <TextBox   Grid.Column="9" Text="{Binding TableComment, UpdateSourceTrigger=PropertyChanged}"
+                           Style="{StaticResource CompactTextBox}" Margin="0,0,0,0"/>
+            </Grid>
+        </Border>
+
+        <!-- ═══ 主體 TabControl ═══ -->
+        <TabControl Grid.Row="2" SelectedIndex="{Binding ActiveTab}">
+
+            <!-- ─── 分頁1：欄位設計 ─── -->
+            <TabItem Header="{DynamicResource S.k25525f}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- 欄位工具列 -->
+                    <Border Grid.Row="0" Background="{StaticResource SecondaryBrush}" Padding="8,5">
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="{DynamicResource S.k56a3c7}" Command="{Binding AddColumnCommand}"
+                                    Style="{StaticResource PrimaryButtonStyle}" Margin="0,0,4,0"/>
+                            <Button Content="{DynamicResource S.kfba47c}" Command="{Binding DeleteColumnCommand}"
+                                    Style="{StaticResource ToolBtn}"/>
+                            <Button Content="{DynamicResource S.kd4ab0d}" Command="{Binding MoveUpCommand}"
+                                    Style="{StaticResource ToolBtn}"/>
+                            <Button Content="{DynamicResource S.k3d591a}" Command="{Binding MoveDownCommand}"
+                                    Style="{StaticResource ToolBtn}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 欄位 DataGrid -->
+                    <DataGrid Grid.Row="1"
+                              x:Name="ColumnGrid"
+                              ItemsSource="{Binding Columns}"
+                              SelectedItem="{Binding SelectedColumn, Mode=TwoWay}"
+                              AutoGenerateColumns="False"
+                              CanUserAddRows="False"
+                              CanUserDeleteRows="False"
+                              CanUserReorderColumns="False"
+                              GridLinesVisibility="Horizontal"
+                              HorizontalGridLinesBrush="#9E9E9E"
+                              HeadersVisibility="Column"
+                              SelectionMode="Single"
+                              Background="White"
+                              RowBackground="White"
+                              AlternatingRowBackground="{StaticResource PrimaryBrush}"
+                              BorderThickness="0"
+                              FontSize="12"
+                              FontFamily="Segoe UI"
+                              RowHeight="32">
+
+                        <DataGrid.Resources>
+                            <Style TargetType="DataGridCell">
+                                <Setter Property="BorderThickness" Value="0"/>
+                                <Setter Property="Padding"         Value="0"/>
+                                <Setter Property="Foreground"      Value="{StaticResource TextPrimaryBrush}"/>
+                                <Style.Triggers>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter Property="Background" Value="#1A3A4A"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DataGrid.Resources>
+
+                        <DataGrid.Columns>
+
+                            <!-- PK -->
+                            <DataGridTemplateColumn Header="PK" Width="36" CanUserResize="False">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <CheckBox IsChecked="{Binding IsPrimaryKey, UpdateSourceTrigger=PropertyChanged}"
+                                                  HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                  Cursor="Hand"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <!-- 欄位名稱 -->
+                            <DataGridTemplateColumn Header="{DynamicResource S.k3d0dee}" Width="140">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
+                                                 Style="{StaticResource CompactTextBox}"
+                                                 BorderThickness="0" Background="Transparent"
+                                                 TextChanged="Column_Changed"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <!-- 資料型別 -->
+                            <DataGridTemplateColumn Header="{DynamicResource S.k66a29f}" Width="120">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ComboBox ItemsSource="{Binding DataContext.DataTypes,
+                                                    RelativeSource={RelativeSource AncestorType=Window}}"
+                                                  SelectedItem="{Binding DataType, UpdateSourceTrigger=PropertyChanged}"
+                                                  Style="{StaticResource CompactComboBox}"
+                                                  Height="26" BorderThickness="0"
+                                                  Background="Transparent"
+                                                  SelectionChanged="Column_Changed"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <!-- 長度 -->
+                            <DataGridTemplateColumn Header="{DynamicResource S.k64bec9}" Width="72">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBox Text="{Binding Length, UpdateSourceTrigger=PropertyChanged}"
+                                                 Style="{StaticResource CompactTextBox}"
+                                                 BorderThickness="0" Background="Transparent"
+                                                 IsEnabled="{Binding ShowLength}"
+                                                 TextChanged="Column_Changed"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <!-- Nullable -->
+                            <DataGridTemplateColumn Header="NULL" Width="46" CanUserResize="False">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <CheckBox IsChecked="{Binding IsNullable, UpdateSourceTrigger=PropertyChanged}"
+                                                  HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                  Cursor="Hand" Click="Column_Changed"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <!-- Auto Increment -->
+                            <DataGridTemplateColumn Header="AI" Width="36" CanUserResize="False">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <CheckBox IsChecked="{Binding IsAutoIncrement, UpdateSourceTrigger=PropertyChanged}"
+                                                  HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                  Cursor="Hand" Click="Column_Changed"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <!-- Unsigned -->
+                            <DataGridTemplateColumn Header="UN" Width="36" CanUserResize="False">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <CheckBox IsChecked="{Binding IsUnsigned, UpdateSourceTrigger=PropertyChanged}"
+                                                  HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                  Cursor="Hand" Click="Column_Changed"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <!-- 預設值 -->
+                            <DataGridTemplateColumn Header="{DynamicResource S.k076b70}" Width="110">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBox Text="{Binding DefaultValue, UpdateSourceTrigger=PropertyChanged}"
+                                                 Style="{StaticResource CompactTextBox}"
+                                                 BorderThickness="0" Background="Transparent"
+                                                 TextChanged="Column_Changed"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <!-- 備註 -->
+                            <DataGridTemplateColumn Header="{DynamicResource S.k0fb49f}" Width="*">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBox Text="{Binding Comment, UpdateSourceTrigger=PropertyChanged}"
+                                                 Style="{StaticResource CompactTextBox}"
+                                                 BorderThickness="0" Background="Transparent"
+                                                 TextChanged="Column_Changed"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </TabItem>
+
+            <!-- ─── 分頁2：索引設計 ─── -->
+            <TabItem Header="{DynamicResource S.k771f9e}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" Background="{StaticResource SecondaryBrush}" Padding="8,5">
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="{DynamicResource S.k8d9294}" Command="{Binding AddIndexCommand}"
+                                    Style="{StaticResource PrimaryButtonStyle}" Margin="0,0,4,0"/>
+                            <Button Content="{DynamicResource S.kfba47c}" Command="{Binding DeleteIndexCommand}"
+                                    Style="{StaticResource ToolBtn}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <DataGrid Grid.Row="1"
+                              ItemsSource="{Binding Indexes}"
+                              SelectedItem="{Binding SelectedIndex, Mode=TwoWay}"
+                              AutoGenerateColumns="False"
+                              CanUserAddRows="False"
+                              CanUserDeleteRows="False"
+                              GridLinesVisibility="Horizontal"
+                              HorizontalGridLinesBrush="#9E9E9E"
+                              HeadersVisibility="Column"
+                              SelectionMode="Single"
+                              Background="White"
+                              RowBackground="White"
+                              AlternatingRowBackground="{StaticResource PrimaryBrush}"
+                              BorderThickness="0"
+                              FontSize="12"
+                              RowHeight="32">
+                        <DataGrid.Columns>
+
+                            <DataGridTemplateColumn Header="{DynamicResource S.k59ffe9}" Width="180">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
+                                                 Style="{StaticResource CompactTextBox}"
+                                                 BorderThickness="0" Background="Transparent"
+                                                 TextChanged="Index_Changed"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <DataGridTemplateColumn Header="{DynamicResource S.k84c1fa}" Width="120">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ComboBox ItemsSource="{Binding DataContext.IndexTypes,
+                                                    RelativeSource={RelativeSource AncestorType=Window}}"
+                                                  SelectedItem="{Binding IndexType, UpdateSourceTrigger=PropertyChanged}"
+                                                  Style="{StaticResource CompactComboBox}"
+                                                  Height="26" BorderThickness="0" Background="Transparent"
+                                                  SelectionChanged="Index_Changed"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <DataGridTemplateColumn Header="{DynamicResource S.k86ce8c}" Width="*">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBox Text="{Binding Columns, UpdateSourceTrigger=PropertyChanged}"
+                                                 Style="{StaticResource CompactTextBox}"
+                                                 BorderThickness="0" Background="Transparent"
+                                                 TextChanged="Index_Changed"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </TabItem>
+
+            <!-- ─── 分頁3：SQL 預覽 ─── -->
+            <TabItem Header="{DynamicResource S.SQLee9da3}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Border Grid.Row="0" Background="{StaticResource SecondaryBrush}" Padding="8,5">
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="{DynamicResource S.kb401bd}" Command="{Binding RefreshPreviewCommand}"
+                                    Style="{StaticResource ToolBtn}"/>
+                            <Button Content="{DynamicResource S.SQL36a961}" Style="{StaticResource ToolBtn}"
+                                    Click="CopySql_Click"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Grid.Row="1" Background="#FFFFFF">
+                        <TextBox Text="{Binding PreviewSql, Mode=OneWay}"
+                                 IsReadOnly="True"
+                                 Background="Transparent"
+                                 Foreground="#A8D8A8"
+                                 FontFamily="Consolas, Courier New"
+                                 FontSize="13"
+                                 BorderThickness="0"
+                                 AcceptsReturn="True"
+                                 VerticalScrollBarVisibility="Auto"
+                                 HorizontalScrollBarVisibility="Auto"
+                                 Padding="12"
+                                 TextWrapping="NoWrap"/>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+        </TabControl>
+
+        <!-- ═══ 狀態列 ═══ -->
+        <Border Grid.Row="3" Padding="12,5">
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding HasError}" Value="True">
+                            <Setter Property="Background" Value="#B71C1C"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding IsBusy}" Value="True">
+                            <Setter Property="Background" Value="#1565C0"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+            <Grid>
+                <TextBlock Text="{Binding StatusMessage}"
+                           Foreground="{StaticResource TextPrimaryBrush}"
+                           FontSize="12" VerticalAlignment="Center"/>
+                <ProgressBar IsIndeterminate="True" Width="120" Height="4"
+                             HorizontalAlignment="Right" VerticalAlignment="Center"
+                             Foreground="{StaticResource AccentBrush}"
+                             Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibility}}"/>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

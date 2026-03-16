@@ -1,0 +1,215 @@
+<Window x:Class="MySQLManager.Views.ExplainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:helpers="clr-namespace:MySQLManager.Helpers"
+        Title="{DynamicResource S.EXPLAIN640d2a}" Height="580" Width="860"
+        MinWidth="660" MinHeight="440"
+        Background="#F4F6F9"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResize">
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Resources/Styles/AppStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <helpers:BoolToVisibilityConverter        x:Key="BoolToVisibility"/>
+            <helpers:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibility"/>
+            <helpers:InverseBoolConverter             x:Key="InverseBool"/>
+            <helpers:NullToVisibilityConverter        x:Key="NullToVisibility"/>
+            <helpers:NullOrEmptyToVisibilityConverter x:Key="NullOrEmptyToVisibility"/>
+            <helpers:StringToBrushConverter           x:Key="StringToBrush"/>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>  <!-- SQL 輸入 -->
+            <RowDefinition Height="Auto"/>  <!-- 建議摘要 -->
+            <RowDefinition Height="*"/>     <!-- 視覺化 + 表格 -->
+        </Grid.RowDefinitions>
+
+        <!-- SQL 輸入列 -->
+        <Border Grid.Row="0" Background="#F0F2F5" Padding="10,8">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="120"/>
+                </Grid.ColumnDefinitions>
+                <TextBox x:Name="SqlInput"
+                         Text="{Binding Sql, UpdateSourceTrigger=PropertyChanged}"
+                         Background="#FFFFFF" Foreground="#37474F"
+                         BorderBrush="#9E9E9E" Padding="8,6"
+                         FontFamily="Consolas" FontSize="12"
+                         AcceptsReturn="False"/>
+                <TextBlock Grid.Column="1" Text="{DynamicResource S.k4a4f21}" Foreground="#78909C"
+                           VerticalAlignment="Center" Margin="10,0,6,0"/>
+                <TextBox Grid.Column="2"
+                         Text="{Binding Database, UpdateSourceTrigger=PropertyChanged}"
+                         Background="#FFFFFF" Foreground="#37474F"
+                         BorderBrush="#9E9E9E" Padding="6,6"
+                         FontFamily="Consolas" FontSize="12"/>
+            </Grid>
+        </Border>
+
+        <!-- 建議摘要 -->
+        <Border Grid.Row="1" Padding="12,8"
+                Visibility="{Binding HasResult, Converter={StaticResource BoolToVisibility}}">
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Setter Property="Background" Value="#E6F4EA"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding OverallGrade}" Value="差">
+                            <Setter Property="Background" Value="#FFF3E0"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding OverallGrade}" Value="慢">
+                            <Setter Property="Background" Value="#FEECEC"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+            <StackPanel Orientation="Horizontal">
+                <Border CornerRadius="4" Padding="10,4" Margin="0,0,12,0"
+                        Background="{Binding OverallColor, Converter={StaticResource StringToBrush}}">
+                    <TextBlock Text="{Binding OverallGrade}"
+                               Foreground="White" FontWeight="Bold" FontSize="14"/>
+                </Border>
+                <TextBlock Text="{Binding Suggestion}"
+                           Foreground="#37474F" VerticalAlignment="Center"
+                           FontSize="12" TextWrapping="Wrap"/>
+            </StackPanel>
+        </Border>
+
+        <!-- 主體 -->
+        <Grid Grid.Row="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="160"/>  <!-- 流程圖 -->
+                <RowDefinition Height="4"/>
+                <RowDefinition Height="*"/>    <!-- 詳細表格 -->
+            </Grid.RowDefinitions>
+
+            <!-- 執行計畫流程圖 -->
+            <Border Grid.Row="0" Background="#FFFFFF"
+                    BorderBrush="#F0F2F5" BorderThickness="0,0,0,1">
+                <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                              VerticalScrollBarVisibility="Disabled">
+                    <ItemsControl x:Name="FlowPanel"
+                                  ItemsSource="{Binding ExplainRows}"
+                                  Margin="16,12">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <!-- 節點卡片 -->
+                                    <Border CornerRadius="6" Width="140" Padding="10,8"
+                                            BorderThickness="2" Margin="0,4">
+                                        <Border.BorderBrush>
+                                            <Binding Path="PerformanceColor" Converter="{StaticResource StringToBrush}"/>
+                                        </Border.BorderBrush>
+                                        <Border.Background>
+                                            <SolidColorBrush Color="#EEF4FF"/>
+                                        </Border.Background>
+                                        <StackPanel>
+                                            <!-- 資料表名 -->
+                                            <TextBlock Text="{Binding Table}"
+                                                       Foreground="#1976D2"
+                                                       FontWeight="Bold" FontSize="12"
+                                                       TextTrimming="CharacterEllipsis"/>
+                                            <!-- 掃描類型 -->
+                                            <Border CornerRadius="3" Padding="4,2" Margin="0,4,0,2"
+                                                    Background="{Binding PerformanceColor, Converter={StaticResource StringToBrush}}">
+                                                <TextBlock Text="{Binding Type}"
+                                                           Foreground="White" FontSize="11"
+                                                           FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                            </Border>
+                                            <!-- 使用的索引 -->
+                                            <TextBlock FontSize="10" Foreground="#78909C"
+                                                       TextTrimming="CharacterEllipsis">
+                                                <Run Text="idx: "/>
+                                                <Run Text="{Binding Key, FallbackValue='—'}"/>
+                                            </TextBlock>
+                                            <!-- 預估掃描列數 -->
+                                            <TextBlock FontSize="10" Foreground="#78909C">
+                                                <Run Text="rows: "/>
+                                                <Run Text="{Binding Rows}"/>
+                                            </TextBlock>
+                                            <!-- 評分 -->
+                                            <Border CornerRadius="3" Padding="3,1" Margin="0,4,0,0"
+                                                    HorizontalAlignment="Right"
+                                                    Background="{Binding PerformanceColor, Converter={StaticResource StringToBrush}}">
+                                                <TextBlock Text="{Binding PerformanceLabel}"
+                                                           Foreground="White" FontSize="10"/>
+                                            </Border>
+                                        </StackPanel>
+                                    </Border>
+                                    <!-- 箭頭 -->
+                                    <TextBlock Text=" ──▶ " Foreground="#9E9E9E"
+                                               VerticalAlignment="Center" FontSize="14"
+                                               Visibility="{Binding IsLast, Converter={StaticResource InverseBoolToVisibility}}"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Border>
+
+            <GridSplitter Grid.Row="1" Height="4"
+                          Background="#F0F2F5" HorizontalAlignment="Stretch"/>
+
+            <!-- 詳細資料表格 -->
+            <Border Grid.Row="2" Background="#FFFFFF">
+                <DataGrid ItemsSource="{Binding ExplainRows}"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          Background="Transparent"
+                          Foreground="#37474F"
+                          GridLinesVisibility="All"
+                          HorizontalGridLinesBrush="#F0F2F5"
+                          VerticalGridLinesBrush="#F0F2F5"
+                          HeadersVisibility="Column"
+                          BorderThickness="0"
+                          FontFamily="Consolas" FontSize="11"
+                          RowBackground="Transparent"
+                          AlternatingRowBackground="#FAFBFC">
+                    <DataGrid.ColumnHeaderStyle>
+                        <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
+                            <Setter Property="Background"   Value="#F0F2F5"/>
+                            <Setter Property="Foreground"   Value="#1976D2"/>
+                            <Setter Property="FontWeight"   Value="SemiBold"/>
+                            <Setter Property="Padding"      Value="8,5"/>
+                            <Setter Property="BorderBrush"  Value="#E8ECF0"/>
+                            <Setter Property="BorderThickness" Value="0,0,1,1"/>
+                        </Style>
+                    </DataGrid.ColumnHeaderStyle>
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="id"          Binding="{Binding Id}"          Width="35"/>
+                        <DataGridTextColumn Header="select_type" Binding="{Binding SelectType}"  Width="100"/>
+                        <DataGridTextColumn Header="table"       Binding="{Binding Table}"       Width="100"/>
+                        <DataGridTemplateColumn Header="type" Width="70">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border CornerRadius="3" Padding="4,1" Margin="2"
+                                            Background="{Binding PerformanceColor, Converter={StaticResource StringToBrush}}">
+                                        <TextBlock Text="{Binding Type}" Foreground="White"
+                                                   HorizontalAlignment="Center" FontSize="10"/>
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="possible_keys" Binding="{Binding PossibleKeys}" Width="130"/>
+                        <DataGridTextColumn Header="key"           Binding="{Binding Key}"          Width="100"/>
+                        <DataGridTextColumn Header="key_len"       Binding="{Binding KeyLen}"       Width="60"/>
+                        <DataGridTextColumn Header="rows"          Binding="{Binding Rows}"         Width="60"/>
+                        <DataGridTextColumn Header="filtered"      Binding="{Binding Filtered}"     Width="60"/>
+                        <DataGridTextColumn Header="Extra"         Binding="{Binding Extra}"        Width="*"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>

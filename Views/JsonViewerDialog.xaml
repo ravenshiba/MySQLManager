@@ -1,0 +1,79 @@
+<Window x:Class="MySQLManager.Views.JsonViewerDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="{DynamicResource S.JSON5b978a}" Height="520" Width="700"
+        MinWidth="500" MinHeight="360"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResizeWithGrip">
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Toolbar -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
+            <Button x:Name="CopyBtn" Content="{DynamicResource S.k2e43a2}" Click="Copy_Click"
+                    Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,6,0"/>
+            <Button x:Name="FormatBtn" Content="{DynamicResource S.k874133}" Click="Format_Click"
+                    Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,6,0"/>
+            <Button x:Name="CompactBtn" Content="{DynamicResource S.k0efd79}" Click="Compact_Click"
+                    Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,6,0"/>
+            <Separator Width="1" Background="{StaticResource BorderBrush}" Margin="4,2"/>
+            <TextBlock x:Name="PathLabel" VerticalAlignment="Center"
+                       Foreground="{StaticResource TextSecondaryBrush}"
+                       FontFamily="Consolas" FontSize="11" Margin="8,0,0,0"
+                       Text="$"/>
+        </StackPanel>
+
+        <!-- Tree + Raw splitter -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="5"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- JSON Tree -->
+            <Border Grid.Column="0" BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="1" CornerRadius="6">
+                <TreeView x:Name="JsonTree"
+                          SelectedItemChanged="JsonTree_SelectedItemChanged"
+                          Background="{StaticResource PrimaryBrush}"
+                          FontFamily="Consolas" FontSize="12"/>
+            </Border>
+
+            <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch"
+                          Background="Transparent"/>
+
+            <!-- Raw JSON editor -->
+            <Border Grid.Column="2" BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="1" CornerRadius="6">
+                <TextBox x:Name="RawBox"
+                         AcceptsReturn="True" TextWrapping="Wrap"
+                         VerticalScrollBarVisibility="Auto"
+                         HorizontalScrollBarVisibility="Auto"
+                         FontFamily="Consolas" FontSize="12"
+                         Background="{StaticResource PrimaryBrush}"
+                         Foreground="{StaticResource TextPrimaryBrush}"
+                         BorderThickness="0" Padding="8"
+                         TextChanged="RawBox_TextChanged"/>
+            </Border>
+        </Grid>
+
+        <!-- Status bar -->
+        <Grid Grid.Row="2" Margin="0,8,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock x:Name="StatusLabel" Grid.Column="0"
+                       Foreground="{StaticResource TextSecondaryBrush}" FontSize="11"
+                       VerticalAlignment="Center"/>
+            <Button Grid.Column="1" Content="{DynamicResource S.kba0fcf}" IsDefault="True" Click="Ok_Click"
+                    Style="{StaticResource PrimaryButtonStyle}" Padding="20,6"
+                    x:Name="OkBtn"/>
+        </Grid>
+    </Grid>
+</Window>

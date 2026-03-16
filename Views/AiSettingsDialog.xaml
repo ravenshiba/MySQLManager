@@ -1,0 +1,95 @@
+<Window x:Class="MySQLManager.Views.AiSettingsDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:helpers="clr-namespace:MySQLManager.Helpers"
+        Title="{DynamicResource S.AIf7d842}" Width="500"
+        MinWidth="420" MinHeight="320" Height="400"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResizeWithGrip"
+        Background="White"
+        FontFamily="Segoe UI, Microsoft JhengHei">
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Resources/Styles/AppStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <helpers:BoolToVisibilityConverter        x:Key="BoolToVisibility"/>
+            <helpers:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibility"/>
+            <helpers:InverseBoolConverter             x:Key="InverseBool"/>
+            <helpers:NullToVisibilityConverter        x:Key="NullToVisibility"/>
+            <helpers:NullOrEmptyToVisibilityConverter x:Key="NullOrEmptyToVisibility"/>
+            <helpers:StringToBrushConverter           x:Key="StringToBrush"/>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- 標題 -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,20">
+            <TextBlock Text="🤖" FontSize="28" VerticalAlignment="Center" Margin="0,0,10,0"/>
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock Text="{DynamicResource S.AISQL77fc75}"
+                           FontSize="18" FontWeight="Bold"
+                           Foreground="{StaticResource TextPrimaryBrush}"/>
+                <TextBlock Text="{DynamicResource S.GroqAPI1b847e}"
+                           FontSize="12" Foreground="{StaticResource TextSecondaryBrush}"/>
+            </StackPanel>
+        </StackPanel>
+
+        <!-- API Key 輸入 -->
+        <Grid Grid.Row="1" Margin="0,0,0,12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="100"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="Groq API Key"
+                       VerticalAlignment="Center"
+                       Foreground="{StaticResource TextPrimaryBrush}"
+                       FontWeight="SemiBold"/>
+            <PasswordBox Grid.Column="1" x:Name="ApiKeyBox"
+                         Padding="8,6" FontFamily="Consolas"/>
+        </Grid>
+
+        <!-- 說明 -->
+        <Border Grid.Row="2" Background="#F3F0FF" CornerRadius="6" Padding="12,10" Margin="0,0,0,12">
+            <StackPanel>
+                <TextBlock Text="{DynamicResource S.APIKey38e036}"
+                           FontWeight="SemiBold" Foreground="#4A3080" Margin="0,0,0,4"/>
+                <TextBlock Foreground="#5B4090" FontSize="12" TextWrapping="Wrap">
+                    1. 前往 https://console.groq.com 註冊（免費）&#x0a;
+                    2. 進入 API Keys 頁面建立新 Key&#x0a;
+                    3. 貼上 Key 後儲存即可使用
+                </TextBlock>
+                <TextBlock Margin="0,6,0,0" FontSize="11"
+                           Foreground="{StaticResource TextSecondaryBrush}">
+                    使用模型：llama-3.1-70b-versatile（免費，每分鐘 30 次）
+                </TextBlock>
+            </StackPanel>
+        </Border>
+
+        <!-- 測試狀態 -->
+        <TextBlock Grid.Row="3" x:Name="TestStatus"
+                   Foreground="{StaticResource AccentBrush}"
+                   FontSize="12" VerticalAlignment="Top"/>
+
+        <!-- 按鈕 -->
+        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Content="{DynamicResource S.k7faef4}"
+                    Style="{StaticResource SecondaryButtonStyle}"
+                    Margin="0,0,8,0" Padding="14,8"
+                    Click="TestConnection_Click"/>
+            <Button Content="{DynamicResource S.ke9dabe}"
+                    Style="{StaticResource PrimaryButtonStyle}"
+                    Padding="20,8"
+                    Click="Save_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

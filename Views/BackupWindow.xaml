@@ -1,0 +1,170 @@
+<Window x:Class="MySQLManager.Views.BackupWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:helpers="clr-namespace:MySQLManager.Helpers"
+        Title="{DynamicResource S.k5c71af}" Height="560" Width="720"
+        MinWidth="580" MinHeight="440"
+        Background="#F4F6F9"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResize">
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Resources/Styles/AppStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <helpers:BoolToVisibilityConverter        x:Key="BoolToVisibility"/>
+            <helpers:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibility"/>
+            <helpers:InverseBoolConverter             x:Key="InverseBool"/>
+            <helpers:NullToVisibilityConverter        x:Key="NullToVisibility"/>
+            <helpers:NullOrEmptyToVisibilityConverter x:Key="NullOrEmptyToVisibility"/>
+            <helpers:StringToBrushConverter           x:Key="StringToBrush"/>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TabControl Grid.Row="0" Background="Transparent"
+                    BorderBrush="#F0F2F5">
+            <TabControl.Resources>
+                <Style TargetType="TabItem">
+                    <Setter Property="Background"  Value="#F0F2F5"/>
+                    <Setter Property="Foreground"  Value="#78909C"/>
+                    <Setter Property="Padding"     Value="16,8"/>
+                    <Setter Property="BorderThickness" Value="0"/>
+                    <Style.Triggers>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="Background" Value="#F4F6F9"/>
+                            <Setter Property="Foreground" Value="#1976D2"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </TabControl.Resources>
+
+            <!-- ─ 備份頁 ─ -->
+            <TabItem Header="{DynamicResource S.k579946}">
+                <Border Padding="20,16">
+                    <StackPanel>
+                        <!-- 選資料庫 -->
+                        <TextBlock Text="{DynamicResource S.ka5f8fc}" Foreground="#78909C" FontSize="11" Margin="0,0,0,4"/>
+                        <ComboBox ItemsSource="{Binding Databases}"
+                                  SelectedItem="{Binding BackupDatabase}"
+                                  Background="#F0F2F5" Foreground="White"
+                                  BorderBrush="#9E9E9E" Padding="8,6" Margin="0,0,0,14"/>
+
+                        <!-- 選項 -->
+                        <TextBlock Text="{DynamicResource S.kdf5f4c}" Foreground="#78909C" FontSize="11" Margin="0,0,0,6"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
+                            <CheckBox Content="{DynamicResource S.DDL621043}" IsChecked="{Binding IncludeDdl}"
+                                      Foreground="White" Margin="0,0,20,0"/>
+                            <CheckBox Content="{DynamicResource S.DMLecb46b}" IsChecked="{Binding IncludeData}"
+                                      Foreground="White"/>
+                        </StackPanel>
+
+                        <!-- 輸出路徑 -->
+                        <TextBlock Text="{DynamicResource S.k1da538}" Foreground="#78909C" FontSize="11" Margin="0,0,0,4"/>
+                        <Grid Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox Grid.Column="0" Text="{Binding BackupPath}"
+                                     IsReadOnly="True"
+                                     Background="#F0F2F5" Foreground="#37474F"
+                                     BorderBrush="#9E9E9E" Padding="8,5"
+                                     FontFamily="Consolas" FontSize="12"/>
+                            <Button Grid.Column="1" Content="📂" Margin="6,0,0,0"
+                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    Background="#9E9E9E" Click="BrowseBackup_Click"/>
+                        </Grid>
+
+                        <!-- 執行 -->
+                        <Button Content="{DynamicResource S.k181b78}"
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                Background="#1E8E3E" Padding="16,8"
+                                IsEnabled="{Binding CanBackup}"
+                                Click="Backup_Click" HorizontalAlignment="Left"/>
+                    </StackPanel>
+                </Border>
+            </TabItem>
+
+            <!-- ─ 還原頁 ─ -->
+            <TabItem Header="{DynamicResource S.kde0739}">
+                <Border Padding="20,16">
+                    <StackPanel>
+                        <!-- 選目標資料庫 -->
+                        <TextBlock Text="{DynamicResource S.SQL087579}"
+                                   Foreground="#78909C" FontSize="11" Margin="0,0,0,4"/>
+                        <ComboBox ItemsSource="{Binding Databases}"
+                                  SelectedItem="{Binding RestoreDatabase}"
+                                  Background="#F0F2F5" Foreground="White"
+                                  BorderBrush="#9E9E9E" Padding="8,6" Margin="0,0,0,14"/>
+
+                        <!-- 選 SQL 檔 -->
+                        <TextBlock Text="{DynamicResource S.SQL812d58}" Foreground="#78909C" FontSize="11" Margin="0,0,0,4"/>
+                        <Grid Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox Grid.Column="0" Text="{Binding RestorePath}"
+                                     IsReadOnly="True"
+                                     Background="#F0F2F5" Foreground="#37474F"
+                                     BorderBrush="#9E9E9E" Padding="8,5"
+                                     FontFamily="Consolas" FontSize="12"/>
+                            <Button Grid.Column="1" Content="📂" Margin="6,0,0,0"
+                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    Background="#9E9E9E" Click="BrowseRestore_Click"/>
+                        </Grid>
+
+                        <!-- 警告 -->
+                        <Border Background="#FFF3E0" CornerRadius="4"
+                                Padding="12,8" Margin="0,0,0,16">
+                            <TextBlock Text="{DynamicResource S.SQL68540d}"
+                                       Foreground="#E65100" FontSize="12" TextWrapping="Wrap"/>
+                        </Border>
+
+                        <!-- 執行 -->
+                        <Button Content="{DynamicResource S.k84f98b}"
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                Background="#B71C1C" Padding="16,8"
+                                IsEnabled="{Binding CanRestore}"
+                                Click="Restore_Click" HorizontalAlignment="Left"/>
+                    </StackPanel>
+                </Border>
+            </TabItem>
+        </TabControl>
+
+        <!-- 進度 / 狀態列 -->
+        <Border Grid.Row="1" Background="#F0F2F5" Padding="12,8">
+            <Grid>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <ProgressBar Value="{Binding ProgressValue}"
+                                 Maximum="{Binding ProgressMax}"
+                                 Width="180" Height="5"
+                                 Foreground="#1976D2" Background="#E8ECF0"
+                                 Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibility}}"
+                                 Margin="0,0,10,0"/>
+                    <ProgressBar IsIndeterminate="True"
+                                 Width="180" Height="5"
+                                 Foreground="#1976D2"
+                                 Visibility="{Binding IsIndeterminate, Converter={StaticResource BoolToVisibility}}"
+                                 Margin="0,0,10,0"/>
+                    <TextBlock Text="{Binding StatusText}"
+                               Foreground="#37474F"
+                               FontSize="12" VerticalAlignment="Center"/>
+                </StackPanel>
+                <Button Content="{DynamicResource S.ka2c436}"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        Background="#9E9E9E" Padding="8,3"
+                        HorizontalAlignment="Right"
+                        Visibility="{Binding ShowOpenFolder, Converter={StaticResource BoolToVisibility}}"
+                        Click="OpenFolder_Click"/>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

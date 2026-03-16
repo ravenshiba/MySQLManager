@@ -1,0 +1,2 @@
+D:\PG\MySQLManager\publish\MySQLManager.pdb
+D:\PG\MySQLManager\publish\MySQLManager.exe

@@ -1,0 +1,131 @@
+<Window x:Class="MySQLManager.Views.LockAnalysisWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="{DynamicResource S.Lock1a6a63}"
+        Height="620" Width="1000"
+        MinHeight="460" MinWidth="720"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResize">
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="200"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- ── Toolbar ── -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
+            <Button x:Name="RefreshBtn" Content="{DynamicResource S.kb401bd}" Click="Refresh_Click"
+                    Style="{StaticResource PrimaryButtonStyle}" Margin="0,0,8,0"/>
+            <ToggleButton x:Name="AutoRefreshBtn" Content="{DynamicResource S.5s656933}"
+                          Style="{StaticResource SecondaryButtonStyle}"
+                          Checked="AutoRefresh_Checked" Unchecked="AutoRefresh_Unchecked"
+                          Margin="0,0,8,0"/>
+            <Button x:Name="KillWaitingBtn" Content="{DynamicResource S.KILL897b94}" Click="KillWaiting_Click"
+                    Style="{StaticResource SecondaryButtonStyle}" Foreground="#D32F2F"
+                    Margin="0,0,8,0"/>
+            <TextBlock x:Name="StatusLabel" VerticalAlignment="Center"
+                       Foreground="{StaticResource TextSecondaryBrush}" FontSize="12"/>
+        </StackPanel>
+
+        <!-- ── Summary cards ── -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10">
+            <Border Background="#FFF3E0" BorderBrush="#FFB74D" BorderThickness="1"
+                    CornerRadius="8" Padding="14,8" Margin="0,0,8,0" MinWidth="120">
+                <StackPanel>
+                    <TextBlock Text="{DynamicResource S.kffcc40}" FontSize="11" Foreground="#E65100"/>
+                    <TextBlock x:Name="WaitCountLabel" Text="0" FontSize="22"
+                               FontWeight="Medium" Foreground="#BF360C"/>
+                </StackPanel>
+            </Border>
+            <Border Background="#FFEBEE" BorderBrush="#EF9A9A" BorderThickness="1"
+                    CornerRadius="8" Padding="14,8" Margin="0,0,8,0" MinWidth="120">
+                <StackPanel>
+                    <TextBlock Text="{DynamicResource S.ke4c434}" FontSize="11" Foreground="#B71C1C"/>
+                    <TextBlock x:Name="BlockCountLabel" Text="0" FontSize="22"
+                               FontWeight="Medium" Foreground="#C62828"/>
+                </StackPanel>
+            </Border>
+            <Border Background="#E8F5E9" BorderBrush="#A5D6A7" BorderThickness="1"
+                    CornerRadius="8" Padding="14,8" Margin="0,0,8,0" MinWidth="140">
+                <StackPanel>
+                    <TextBlock Text="{DynamicResource S.k1bbed1}" FontSize="11" Foreground="#1B5E20"/>
+                    <TextBlock x:Name="MaxWaitLabel" Text="0" FontSize="22"
+                               FontWeight="Medium" Foreground="#2E7D32"/>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+
+        <!-- ── Lock wait list ── -->
+        <DataGrid Grid.Row="2" x:Name="LockGrid"
+                  AutoGenerateColumns="False" IsReadOnly="True"
+                  SelectionMode="Single" RowHeaderWidth="0"
+                  GridLinesVisibility="Horizontal"
+                  AlternatingRowBackground="#F8F9FA"
+                  BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                  SelectionChanged="LockGrid_SelectionChanged">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="{DynamicResource S.Threadac0d93}" Binding="{Binding WaitingThread}" Width="100"/>
+                <DataGridTextColumn Header="{DynamicResource S.kafb04b}" Binding="{Binding WaitQueryShort}" Width="*"/>
+                <DataGridTextColumn Header="{DynamicResource S.ka91386}" Binding="{Binding WaitSeconds}" Width="90">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding WaitSeconds}" Value="0">
+                                    <Setter Property="Foreground" Value="#388E3C"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                            <Setter Property="Foreground" Value="#D32F2F"/>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="{DynamicResource S.Thread62cf04}" Binding="{Binding BlockingThread}" Width="100"/>
+                <DataGridTextColumn Header="{DynamicResource S.kfb496f}" Binding="{Binding BlockQueryShort}" Width="*"/>
+                <DataGridTextColumn Header="{DynamicResource S.k418fbd}" Binding="{Binding LockTable}" Width="140"/>
+                <DataGridTextColumn Header="{DynamicResource S.k9b13d5}" Binding="{Binding LockMode}" Width="90"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <GridSplitter Grid.Row="3" Height="5" HorizontalAlignment="Stretch"
+                      Background="Transparent" Cursor="SizeNS"/>
+
+        <!-- ── Detail panel ── -->
+        <Grid Grid.Row="4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="5"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <GroupBox Grid.Column="0" Header="{DynamicResource S.k8bf7cb}"
+                      BorderBrush="{StaticResource BorderBrush}">
+                <TextBox x:Name="WaitingQueryBox" IsReadOnly="True"
+                         TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
+                         Background="{StaticResource PrimaryBrush}"
+                         FontFamily="Consolas" FontSize="12" Padding="8"
+                         BorderThickness="0"/>
+            </GroupBox>
+
+            <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch"
+                          Background="Transparent"/>
+
+            <GroupBox Grid.Column="2" Header="{DynamicResource S.kbcffe9}"
+                      BorderBrush="{StaticResource BorderBrush}">
+                <TextBox x:Name="BlockingQueryBox" IsReadOnly="True"
+                         TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
+                         Background="{StaticResource PrimaryBrush}"
+                         FontFamily="Consolas" FontSize="12" Padding="8"
+                         BorderThickness="0"/>
+            </GroupBox>
+        </Grid>
+
+        <!-- ── Status bar ── -->
+        <TextBlock Grid.Row="5" x:Name="FooterLabel"
+                   Foreground="{StaticResource TextSecondaryBrush}"
+                   FontSize="11" Margin="0,6,0,0"
+                   Text="{DynamicResource S.MySQL57i613f28}"/>
+    </Grid>
+</Window>

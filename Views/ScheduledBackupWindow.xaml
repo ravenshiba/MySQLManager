@@ -1,0 +1,302 @@
+<Window x:Class="MySQLManager.Views.ScheduledBackupWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:helpers="clr-namespace:MySQLManager.Helpers"
+        Title="{DynamicResource S.k77aa6c}" Height="580" Width="860"
+        MinWidth="660" MinHeight="440"
+        Background="#F0F2F5"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResize"
+        Loaded="Window_Loaded">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Resources/Styles/AppStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <helpers:BoolToVisibilityConverter        x:Key="BoolToVisibility"/>
+            <helpers:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibility"/>
+            <helpers:InverseBoolConverter             x:Key="InverseBool"/>
+            <helpers:NullToVisibilityConverter        x:Key="NullToVisibility"/>
+            <helpers:NullOrEmptyToVisibilityConverter x:Key="NullOrEmptyToVisibility"/>
+            <helpers:StringToBrushConverter           x:Key="StringToBrush"/>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- 標題列 -->
+        <Border Grid.Row="0" Background="{StaticResource DeepBrush}"
+                BorderThickness="0,0,0,1" BorderBrush="{StaticResource BorderBrush}"
+                Padding="16,12">
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Left" Text="{DynamicResource S.kcb7a2f}"
+                           FontSize="15" FontWeight="Bold"
+                           Foreground="{StaticResource TextPrimaryBrush}"
+                           VerticalAlignment="Center"/>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                    <Button Content="{DynamicResource S.k7eaac2}" Click="ShowLogs_Click"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            Padding="12,6" Margin="0,0,8,0"/>
+                    <Button Content="{DynamicResource S.ka505e6}" Click="AddSchedule_Click"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            Background="{StaticResource AccentBrush}"
+                            Padding="12,6"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- 主體：排程清單 + 編輯表單 -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="280" MinWidth="220"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- ── 左側排程清單 ── -->
+            <Grid Grid.Column="0" Background="White">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <ListBox Grid.Row="0" x:Name="ScheduleList"
+                         BorderThickness="0,0,1,0"
+                         BorderBrush="{StaticResource BorderBrush}"
+                         SelectionChanged="ScheduleList_SelectionChanged">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="2,4">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="{Binding Database}" FontWeight="Bold"
+                                               FontSize="13" Foreground="{StaticResource TextPrimaryBrush}"/>
+                                    <TextBlock Text="{Binding FrequencyLabel}" FontSize="11"
+                                               Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0"/>
+                                    <TextBlock Text="{Binding LastStatus}" FontSize="10"
+                                               Margin="0,2,0,0"
+                                               Foreground="{StaticResource TextDimBrush}"/>
+                                </StackPanel>
+                                <Border Grid.Column="1" CornerRadius="10" Padding="8,3"
+                                        Margin="6,0,0,0" VerticalAlignment="Center">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background" Value="#E8F5E9"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsEnabled}" Value="False">
+                                                    <Setter Property="Background" Value="#EEEEEE"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <TextBlock FontSize="10" FontWeight="SemiBold">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Text" Value="啟用"/>
+                                                <Setter Property="Foreground" Value="#2E7D32"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsEnabled}" Value="False">
+                                                        <Setter Property="Text" Value="停用"/>
+                                                        <Setter Property="Foreground" Value="#9E9E9E"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Border>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="Padding" Value="12,8"/>
+                            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Background" Value="#D2E3FC"/>
+                                </Trigger>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="{StaticResource HoverBrush}"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                </ListBox>
+
+                <!-- 空白提示 -->
+                <StackPanel Grid.Row="0" x:Name="EmptyScheduleHint"
+                            HorizontalAlignment="Center" VerticalAlignment="Center"
+                            Visibility="Collapsed">
+                    <TextBlock Text="⏰" FontSize="36" HorizontalAlignment="Center"
+                               Foreground="#DADCE0"/>
+                    <TextBlock Text="{DynamicResource S.kf4ec73}" FontSize="13"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                </StackPanel>
+
+                <Button Grid.Row="1" Content="{DynamicResource S.k94d9cf}"
+                        Click="RunNow_Click"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Margin="12" Padding="0,10"/>
+            </Grid>
+
+            <!-- ── 右側編輯表單 ── -->
+            <Border Grid.Column="1" x:Name="EditPanel" Visibility="Collapsed">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="24,20">
+                        <!-- 資料庫 -->
+                        <TextBlock Text="{DynamicResource S.kb0e527}" FontWeight="SemiBold" FontSize="12"
+                                   Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,6"/>
+                        <ComboBox x:Name="DbCombo" Height="34" FontSize="13"
+                                  Padding="8,0" Margin="0,0,0,16"/>
+
+                        <!-- 頻率 -->
+                        <TextBlock Text="{DynamicResource S.kbc3270}" FontWeight="SemiBold" FontSize="12"
+                                   Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,6"/>
+                        <ComboBox x:Name="FreqCombo" Height="34" FontSize="13"
+                                  Padding="8,0" Margin="0,0,0,8"
+                                  SelectionChanged="FreqCombo_Changed">
+                            <ComboBoxItem Content="{DynamicResource S.k78623e}" Tag="Daily"/>
+                            <ComboBoxItem Content="{DynamicResource S.k956820}" Tag="Weekly"/>
+                            <ComboBoxItem Content="{DynamicResource S.k79f1e8}" Tag="Hourly"/>
+                        </ComboBox>
+
+                        <!-- 星期（僅 Weekly） -->
+                        <Grid x:Name="WeekdayRow" Margin="0,0,0,8" Visibility="Collapsed">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="100"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="{DynamicResource S.k4c60f8}" FontSize="12"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       VerticalAlignment="Center"/>
+                            <ComboBox Grid.Column="1" x:Name="WeekdayCombo" Height="34"
+                                      FontSize="13" Padding="8,0">
+                                <ComboBoxItem Content="{DynamicResource S.k5ce438}" Tag="1"/>
+                                <ComboBoxItem Content="{DynamicResource S.k34e521}" Tag="2"/>
+                                <ComboBoxItem Content="{DynamicResource S.k711d99}" Tag="3"/>
+                                <ComboBoxItem Content="{DynamicResource S.k3df6af}" Tag="4"/>
+                                <ComboBoxItem Content="{DynamicResource S.k450ea3}" Tag="5"/>
+                                <ComboBoxItem Content="{DynamicResource S.k1ae72f}" Tag="6"/>
+                                <ComboBoxItem Content="{DynamicResource S.k67b195}" Tag="0"/>
+                            </ComboBox>
+                        </Grid>
+
+                        <!-- 時間（非 Hourly） -->
+                        <Grid x:Name="TimeRow" Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="100"/>
+                                <ColumnDefinition Width="80"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="{DynamicResource S.k43646c}" FontSize="12"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       VerticalAlignment="Center"/>
+                            <TextBox Grid.Column="1" x:Name="TimeBox" Height="34"
+                                     FontSize="13" Padding="8,0" Text="02:00"
+                                     BorderBrush="{StaticResource BorderBrush}"
+                                     ToolTip="{DynamicResource S.HHmm0200210571}"/>
+                        </Grid>
+
+                        <!-- 輸出目錄 -->
+                        <TextBlock Text="{DynamicResource S.kd49b88}" FontWeight="SemiBold" FontSize="12"
+                                   Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,6"/>
+                        <Grid Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="80"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox Grid.Column="0" x:Name="OutputDirBox"
+                                     Height="34" FontSize="12" Padding="8,0"
+                                     BorderBrush="{StaticResource BorderBrush}"
+                                     Margin="0,0,8,0"/>
+                            <Button Grid.Column="1" Content="{DynamicResource S.k5faf2b}" Height="34"
+                                    Click="BrowseDir_Click"
+                                    Style="{StaticResource SecondaryButtonStyle}"/>
+                        </Grid>
+
+                        <!-- 選項 -->
+                        <TextBlock Text="{DynamicResource S.kdf5f4c}" FontWeight="SemiBold" FontSize="12"
+                                   Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,8"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                            <CheckBox x:Name="DdlCheck" Content="{DynamicResource S.DDL721655}"
+                                      IsChecked="True" FontSize="12" Margin="0,0,20,0"/>
+                            <CheckBox x:Name="DataCheck" Content="{DynamicResource S.INSERTe70831}"
+                                      IsChecked="True" FontSize="12"/>
+                        </StackPanel>
+
+                        <!-- 保留份數 -->
+                        <Grid Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="150"/>
+                                <ColumnDefinition Width="80"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="{DynamicResource S.k53ee32}" FontSize="12"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       VerticalAlignment="Center"/>
+                            <TextBox Grid.Column="1" x:Name="KeepBox"
+                                     Height="34" FontSize="13" Padding="8,0" Text="7"
+                                     BorderBrush="{StaticResource BorderBrush}"
+                                     Margin="8,0,0,0"/>
+                            <TextBlock Grid.Column="2" Text="{DynamicResource S.kd4f215}"
+                                       FontSize="12"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       VerticalAlignment="Center" Margin="8,0,0,0"/>
+                        </Grid>
+
+                        <!-- 啟用開關 -->
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,24">
+                            <CheckBox x:Name="EnabledCheck" Content="{DynamicResource S.kd0e6b9}"
+                                      IsChecked="True" FontSize="13" FontWeight="SemiBold"/>
+                        </StackPanel>
+
+                        <!-- 下次執行 -->
+                        <Border Background="{StaticResource DeepBrush}" CornerRadius="6"
+                                Padding="14,10" Margin="0,0,0,20">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{DynamicResource S.k21f64d}" FontSize="12"
+                                           Foreground="{StaticResource TextSecondaryBrush}"/>
+                                <TextBlock x:Name="NextRunLabel" FontSize="12" FontWeight="SemiBold"
+                                           Foreground="{StaticResource AccentBrush}"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- 按鈕列 -->
+                        <DockPanel>
+                            <Button DockPanel.Dock="Left" Content="{DynamicResource S.k4bebfa}"
+                                    Click="DeleteSchedule_Click"
+                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    Background="#D93025" Padding="14,8"/>
+                            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                <Button Content="{DynamicResource S.k1b8fa1}" Click="SaveSchedule_Click"
+                                        Style="{StaticResource PrimaryButtonStyle}"
+                                        Background="{StaticResource AccentBrush}"
+                                        Padding="16,8" Margin="0,0,8,0"/>
+                            </StackPanel>
+                        </DockPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+
+            <!-- 右側空白提示 -->
+            <StackPanel Grid.Column="1" x:Name="RightEmptyHint"
+                        HorizontalAlignment="Center" VerticalAlignment="Center">
+                <TextBlock Text="⏰" FontSize="52" HorizontalAlignment="Center"
+                           Foreground="#DADCE0"/>
+                <TextBlock Text="{DynamicResource S.kd16268}" FontSize="14"
+                           Foreground="{StaticResource TextSecondaryBrush}"
+                           HorizontalAlignment="Center" Margin="0,12,0,0"/>
+                <TextBlock Text="{DynamicResource S.kc2ae58}" FontSize="12"
+                           Foreground="#BDBDBD"
+                           HorizontalAlignment="Center" Margin="0,6,0,0"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>
