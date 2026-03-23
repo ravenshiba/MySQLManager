@@ -116,3 +116,4 @@ D:\PG\MySQLManager\obj\Debug\net8.0-windows\ref\MySQLManager.dll
 D:\PG\MySQLManager\obj\Debug\net8.0-windows\Resources\Localization\Strings.en.baml
 D:\PG\MySQLManager\obj\Debug\net8.0-windows\Resources\Localization\Strings.ja.baml
 D:\PG\MySQLManager\obj\Debug\net8.0-windows\Resources\Localization\Strings.zh-TW.baml
+D:\PG\MySQLManager\obj\Debug\net8.0-windows\MySQLManager.sourcelink.json
